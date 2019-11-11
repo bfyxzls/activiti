@@ -58,6 +58,7 @@ public class AvtivitiApplicationTests {
         }
     }
 
+
     @Test
     public void testDefaltEngine() {
         ProcessEngineConfiguration processEngineConfiguration = ProcessEngineConfiguration.createProcessEngineConfigurationFromResource("activiti.cfg.xml");
@@ -93,7 +94,7 @@ public class AvtivitiApplicationTests {
         // deploymentBuilder.addClasspathResource("AskForLeave.bpmn");
         //2.使用InputStream加载 (替换自己的文件路径)
         ClassLoader classLoader = this.getClass().getClassLoader();
-        FileInputStream fileInputStream = new FileInputStream(classLoader.getResource("user.bpmn").getFile());
+        FileInputStream fileInputStream = new FileInputStream(classLoader.getResource("diagrams/user.bpmn").getFile());
         deploymentBuilder.addInputStream("AskForLeave.bpmn", fileInputStream);
         deploymentBuilder.name("测试部署请假流程");
         //还有将多个bpmn文件打包批量，以及字符串这两种部署方式（这里暂时不介绍这两种方式）

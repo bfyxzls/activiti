@@ -4,10 +4,15 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
     <!--流程配置器-->
     <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration">
-        <property name="jdbcUrl" value="jdbc:mysql://127.0.0.1:33306/activiti5demo" />
-        <property name="jdbcDriver" value="com.mysql.jdbc.Driver" />
-        <property name="jdbcUsername" value="root" />
-        <property name="jdbcPassword" value="123456" />
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/activiti5demo"/>
+        <property name="jdbcDriver" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUsername" value="root"/>
+        <property name="jdbcPassword" value="root"/>
+        <!--        <property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000" />-->
+        <!--        <property name="jdbcDriver" value="org.h2.Driver" />-->
+        <!--        <property name="jdbcUsername" value="sa" />-->
+        <!--        <property name="jdbcPassword" value="" />-->
+
         <!--流程引擎名称(使用ProcessEngines.getDefaultProcessEngine()方法时请不要配置流程引擎名称)
         <property name="processEngineName" value="MyProcessEngine"/>
         -->
