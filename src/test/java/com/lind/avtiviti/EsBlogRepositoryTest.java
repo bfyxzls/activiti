@@ -45,7 +45,7 @@ public class EsBlogRepositoryTest {
 
     String title = "computer";
     String summary = "call";
-    String content = "发明";
+    String content = "中国最伟大的发明";
 
     Page<EsBlog> page = esBlogRepository.findByTitleContainingOrSummaryContainingOrContentContaining(title, summary, content, pageable);
     System.out.println("------------start 1");
