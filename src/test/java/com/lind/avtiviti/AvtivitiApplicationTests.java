@@ -119,7 +119,6 @@ public class AvtivitiApplicationTests {
         //2.通过流程定义的Key启动，这个Key是在我们画流程图的时候输入的ID
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(LEAVEKEY);
         org.junit.Assert.assertEquals(LEAVEKEY, processInstance.getProcessDefinitionKey());
-        System.out.println("启动时间：" + processInstance.getStartTime());
     }
 
     @org.junit.Test

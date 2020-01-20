@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--流程配置器-->
+    <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration">
+
+        <property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000"/>
+        <property name="jdbcDriver" value="org.h2.Driver"/>
+        <property name="jdbcUsername" value="sa"/>
+        <property name="jdbcPassword" value=""/>
+
+        <!--流程引擎名称(使用ProcessEngines.getDefaultProcessEngine()方法时请不要配置流程引擎名称)
+        <property name="processEngineName" value="MyProcessEngine"/>
+        -->
+        <!--
+        databaseSchemaUpdate: 设置流程引擎启动和关闭时如何处理数据库表。
+        false（默认）：检查数据库表的版本和依赖库的版本， 如果版本不匹配就抛出异常。
+        true: 构建流程引擎时，执行检查，如果需要就执行更新。 如果表不存在，就创建
+        create-drop: 构建流程引擎时创建数据库表， 关闭流程引擎时删除这些表。
+        -->
+        <property name="databaseSchemaUpdate" value="true"/>
+    </bean>
+</beans>
