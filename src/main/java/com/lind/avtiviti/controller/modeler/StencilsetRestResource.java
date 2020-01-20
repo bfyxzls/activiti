@@ -22,15 +22,24 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author Tijs Rademakers
+ * 控制器.
+ *
+ * @author Tijs Rademakers.
  */
 @RestController
 public class StencilsetRestResource {
 
-  @RequestMapping(value = "/editor/stencilset", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+  /**
+   * 配置.
+   */
+  @RequestMapping(
+      value = "/editor/stencilset",
+      method = RequestMethod.GET,
+      produces = "application/json;charset=utf-8")
   @ResponseBody
   public String getStencilset() {
-    InputStream stencilsetStream = this.getClass().getClassLoader().getResourceAsStream("static/stencilset.json");
+    InputStream stencilsetStream = this.getClass().getClassLoader()
+        .getResourceAsStream("static/stencilset.json");
     try {
       return IOUtils.toString(stencilsetStream, "utf-8");
     } catch (Exception e) {

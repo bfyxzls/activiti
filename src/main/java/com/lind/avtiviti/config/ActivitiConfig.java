@@ -1,6 +1,5 @@
 package com.lind.avtiviti.config;
 
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.spring.SpringProcessEngineConfiguration;
@@ -15,13 +14,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableConfigurationProperties(ActivitiConfig.ActivitiExtendProperties.class)
 public class ActivitiConfig {
+
   @Autowired
   private ActivitiExtendProperties properties;
 
   /**
    * init.
-   *
-   * @return
    */
   @Bean
   public ProcessEngineConfigurationConfigurer processEngineConfigurationConfigurer() {

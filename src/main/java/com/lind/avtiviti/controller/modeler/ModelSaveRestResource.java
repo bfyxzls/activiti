@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * 模型保存.
+ *
  * @author Tijs Rademakers
  */
 @Slf4j
@@ -53,20 +55,15 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 
   /**
    * 保存流程.
-   *
-   * @param modelId
-   * @param name
-   * @param description
-   * @param jsonXml
-   * @param svgXml
    */
-  @RequestMapping(value = "/model/{modelId}/save", method = RequestMethod.PUT, produces = {"application/json"})
+  @RequestMapping(value = "/model/{modelId}/save", method = RequestMethod.PUT, produces = {
+      "application/json"})
   @ResponseStatus(value = HttpStatus.OK)
   public void saveModel(@PathVariable String modelId,
-                        @RequestParam("name") String name,
-                        @RequestParam("description") String description,
-                        @RequestParam("json_xml") String jsonXml,
-                        @RequestParam("svg_xml") String svgXml) {
+      @RequestParam("name") String name,
+      @RequestParam("description") String description,
+      @RequestParam("json_xml") String jsonXml,
+      @RequestParam("svg_xml") String svgXml) {
 
     try {
       Model model = repositoryService.getModel(modelId);
@@ -95,15 +92,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
       repositoryService.addModelEditorSourceExtra(model.getId(), result);
       outStream.close();
 
-//      // 更新数据库
-//      ActModel actModel = actModelService.get(modelId);
-//      // 更新key
-//      String key = StrUtil.subBetween(json_xml, "\"process_id\":\"", "\",\"name\"");
-//      actModel.setModelKey(key);
-//      actModel.setName(name);
-//      actModel.setDescription(description);
-//      actModel.setVersion(newVersion);
-//      actModelService.update(actModel);
+
     } catch (Exception e) {
       log.error("保存模型出错", e);
       throw new ActivitiException("保存模型出错", e);
