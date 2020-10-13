@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      layout:decorator="layout">
+<div layout:fragment="content">
+    <!--遍历数组-->
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>proDefId</th>
+            <th>name</th>
+            <th>time</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item:${result}">
+            <td th:text="${item.id}"></td>
+            <td th:text="${item.proDefId}"></td>
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.time}"></td>
+            <td><a th:href="@{/execution/start/{id}?title={title}(id=${item.proDefId},title=${item.name})}">启动</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</html>

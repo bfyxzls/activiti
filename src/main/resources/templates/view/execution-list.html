@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      layout:decorator="layout">
+<div layout:fragment="content">
+    <!--遍历数组-->
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>proDefId</th>
+            <th>isSuspended</th>
+            <th>taskId</th>
+            <th>taskName</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item:${result}">
+            <td th:text="${item.id}"></td>
+            <td th:text="${item.proDefId}"></td>
+            <td th:text="${item.isSuspended}"></td>
+            <td th:text="${item.taskId}"></td>
+            <td th:text="${item.taskName}"></td>
+            <td><a th:href="@{/execution/pass/{id}/{taskid}(id=${item.id},taskid=${item.taskId})}">审批</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</html>

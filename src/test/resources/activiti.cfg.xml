@@ -5,10 +5,15 @@
     <!--流程配置器-->
     <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration">
 
-        <property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000"/>
-        <property name="jdbcDriver" value="org.h2.Driver"/>
-        <property name="jdbcUsername" value="sa"/>
-        <property name="jdbcPassword" value=""/>
+<!--        <property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000"/>-->
+<!--        <property name="jdbcDriver" value="org.h2.Driver"/>-->
+<!--        <property name="jdbcUsername" value="sa"/>-->
+<!--        <property name="jdbcPassword" value=""/>-->
+
+        <property name="jdbcUrl" value="jdbc:mysql://192.168.4.26:3306/activiti?useUnicode=true"/>
+        <property name="jdbcDriver" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUsername" value="root"/>
+        <property name="jdbcPassword" value="123456"/>
 
         <!--流程引擎名称(使用ProcessEngines.getDefaultProcessEngine()方法时请不要配置流程引擎名称)
         <property name="processEngineName" value="MyProcessEngine"/>
