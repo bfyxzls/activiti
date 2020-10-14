@@ -7,20 +7,11 @@ import com.google.common.collect.ImmutableMap;
 import com.lind.avtiviti.config.ActivitiConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.Process;
-import org.activiti.bpmn.model.SequenceFlow;
-import org.activiti.bpmn.model.StartEvent;
-import org.activiti.bpmn.model.UserTask;
+import org.activiti.bpmn.model.*;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
@@ -50,13 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,12 +50,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @Slf4j
@@ -389,6 +369,27 @@ public class ProcessController {
         response.sendRedirect("/view/execution/list");
     }
 
+    public String findPreviousId(String taskId) {
+        Task task = null;
+        Map<Integer, String> pList = new HashMap<>();
+
+        task = taskService.createTaskQuery()//
+                .taskId(taskId)//使用任务ID查询
+                .singleResult();
+
+        if (task == null) {
+            throw new IllegalArgumentException("任务不存在");
+        }
+        String processInstanceId = task.getProcessInstanceId();
+        List<HistoricTaskInstance> list = historyService//与历史数据（历史表）相关的service
+                .createHistoricTaskInstanceQuery()//创建历史任务实例查询
+                .processInstanceId(processInstanceId)
+                .list();
+        HistoricTaskInstance historicTaskInstance=list.get(list.size() - 2);
+        log.info("上一节点任务ID：{}", historicTaskInstance.getTaskDefinitionKey());
+        return historicTaskInstance.getTaskDefinitionKey();
+    }
+
     /**
      * 任务节点审批驳回.
      *
@@ -432,9 +433,11 @@ public class ProcessController {
         if (definition == null) {
             throw new IllegalArgumentException("流程定义未找到");
         }
+
         // 取得上一步活动
         ActivityImpl currActivity = ((ProcessDefinitionImpl) definition)
-                .findActivity(currTask.getTaskDefinitionKey());
+                .findActivity(destTaskKey);
+
         List<PvmTransition> nextTransitionList = currActivity
                 .getIncomingTransitions();
         // 清除当前活动的出口
@@ -458,13 +461,13 @@ public class ProcessController {
             newTransitions.add(newTransition);
         }
         // 完成任务
-        List<Task> tasks = taskService.createTaskQuery()
-                .processInstanceId(instance.getId())
-                .taskDefinitionKey(currTask.getTaskDefinitionKey()).list();
-        for (Task task : tasks) {
-            taskService.complete(task.getId(), variables);
-            historyService.deleteHistoricTaskInstance(task.getId());
-        }
+//        List<Task> tasks = taskService.createTaskQuery()
+//                .processInstanceId(instance.getId())
+//                .taskDefinitionKey(currTask.getTaskDefinitionKey()).list();
+//        for (Task task : tasks) {
+//            taskService.complete(task.getId(), variables);
+//            historyService.deleteHistoricTaskInstance(task.getId());
+//        }
         // 恢复方向
         for (TransitionImpl transitionImpl : newTransitions) {
             currActivity.getOutgoingTransitions().remove(transitionImpl);
