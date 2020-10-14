@@ -2,7 +2,33 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
       layout:decorator="layout">
+
 <div layout:fragment="content">
+    <script>
+        $(function () {
+            $(".apply").click(function () {
+                var id = $(this).siblings("input[name=id]").val();
+                var taskId = $(this).siblings("input[name=taskId]").val();
+                var params = $(this).siblings("input[name=params]").val();
+                if (params == "") {
+                    location.href = "/execution/pass/" + id + "/" + taskId;
+                } else {
+                    location.href = "/execution/pass/" + id + "/" + taskId + "?params=" + params;
+                }
+
+            });
+
+
+            $(".back").click(function () {
+                var id = $(this).siblings("input[name=id]").val();
+                var taskId = $(this).siblings("input[name=taskId]").val();
+                var destTaskKey = $(this).siblings("input[name=destTaskKey]").val();
+                location.href = "/execution/back/" + id + "/" + taskId + "?destTaskKey=" + destTaskKey;
+            });
+
+        });
+    </script>
+
     <!--遍历数组-->
     <table class="table table-bordered">
         <thead>
@@ -22,9 +48,19 @@
             <td th:text="${item.isSuspended}"></td>
             <td th:text="${item.taskId}"></td>
             <td th:text="${item.taskName}"></td>
-            <td><a th:href="@{/execution/pass/{id}/{taskid}(id=${item.id},taskid=${item.taskId})}">审批</a></td>
+            <td>
+                <input type="hidden" name="id" th:value="${item.id}">
+                <input type="hidden" name="taskId" th:value="${item.taskId}">
+                参数：<input type="text" name="params">
+                <button class="btn btn-success btn-xs apply" type="button">审批</button>
+                驳回节点：<input type="text" name="destTaskKey">
+                <button class="btn btn-danger btn-xs back" type="button">驳回</button>
+
+                <a class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.id})}">流程图</a>
+            </td>
         </tr>
         </tbody>
     </table>
 </div>
+
 </html>

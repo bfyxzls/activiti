@@ -3,8 +3,10 @@
       xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
       layout:decorator="layout">
 <div layout:fragment="content">
+
+
     <!--遍历数组-->
-    <table class="table table-bordered">
+    <table class="table table-bordered table_number">
         <thead>
         <tr>
             <th>ID</th>
@@ -23,9 +25,9 @@
             <td th:text="${item.lastUpdateTime}"></td>
             <td th:text="${item.metaInfo}"></td>
             <td>
-                <a target="_blank" th:href="@{/modeler.html?modelId={id}(id=${item.id})}">修改模型</a>
-                <a th:href="@{/model/delete?modelId={id}(id=${item.id})}">删除模型</a>
-                <a th:href="@{/model/deploy/{id}(id=${item.id})}">部署为流程</a>
+                <a  class="btn btn-primary btn-xs" target="_blank" th:href="@{/modeler.html?modelId={id}(id=${item.id})}">修改模型</a>
+                <a  class="btn btn-danger btn-xs" th:href="@{/model/delete?modelId={id}(id=${item.id})}">删除模型</a>
+                <a  class="btn btn-success btn-xs" th:href="@{/model/deploy/{id}(id=${item.id})}">部署为流程</a>
             </td>
         </tr>
         </tbody>

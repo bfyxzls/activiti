@@ -3,13 +3,17 @@
       xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
       layout:decorator="layout">
 <div layout:fragment="content">
+
+
     <!--遍历数组-->
-    <table class="table table-bordered">
+    <table class="table table-bordered table_number">
         <thead>
         <tr>
-            <th>ID</th>
-            <th>proDefId</th>
+            <th>id</th>
             <th>name</th>
+            <th>processInstanceId</th>
+            <th>processDefinitionId</th>
+            <th>assignee</th>
             <th>time</th>
             <th></th>
         </tr>
@@ -17,13 +21,16 @@
         <tbody>
         <tr th:each="item:${result}">
             <td th:text="${item.id}"></td>
-            <td th:text="${item.proDefId}"></td>
             <td th:text="${item.name}"></td>
+            <td th:text="${item.processInstanceId}"></td>
+            <td th:text="${item.processDefinitionId}"></td>
+            <td th:text="${item.assignee}"></td>
             <td th:text="${item.time}"></td>
-            <td><a  class="btn btn-primary btn-xs" th:href="@{/execution/start/{id}?title={title}(id=${item.proDefId},title=${item.name})}">启动</a></td>
+            <td>
+                <a  class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.processInstanceId})}">流程图</a>
+            </td>
         </tr>
         </tbody>
     </table>
 </div>
-
 </html>

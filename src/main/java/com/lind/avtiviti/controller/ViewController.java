@@ -10,6 +10,7 @@ import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -58,8 +60,7 @@ public class ViewController {
     @RequestMapping(value = "/model/list", method = RequestMethod.GET)
     public String modelist(Model model) {
         List<org.activiti.engine.repository.Model> list = processEngine.getRepositoryService().createModelQuery()
-                .orderByCreateTime()
-                .desc()
+                .orderByCreateTime().desc()
                 .list();
 
         model.addAttribute("result", list);
@@ -128,5 +129,16 @@ public class ViewController {
         return "view/execution-list";
     }
 
+    /**
+     * 历史记录列表.
+     *
+     */
+    @RequestMapping(value = "/history/finished-list", method = RequestMethod.GET)
+    public String historyList(Model model) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
+                .finished().orderByTaskCreateTime().desc().list();
+        model.addAttribute("result", list);
+        return "view/history-list";
+    }
 
 }

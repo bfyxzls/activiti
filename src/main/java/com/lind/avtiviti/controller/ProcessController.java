@@ -34,6 +34,8 @@ import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
+import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
@@ -248,12 +250,12 @@ public class ProcessController {
      * @param procDefId act_re_procdef.ID_
      */
     @RequestMapping(value = "/execution/start/{procDefId}", method = RequestMethod.GET)
-    public String createInstance(@PathVariable String procDefId, @RequestParam String title) {
+    public void createInstance(@PathVariable String procDefId, @RequestParam String title, HttpServletResponse response) throws IOException {
         // 启动流程
         ProcessInstance pi = runtimeService.startProcessInstanceById(procDefId);
         // 设置流程实例名称
         runtimeService.setProcessInstanceName(pi.getId(), title);
-        return "create instance success";
+        response.sendRedirect("/view/execution/list");
     }
 
     /**
@@ -334,11 +336,13 @@ public class ProcessController {
      * @param comment    备注
      */
     @RequestMapping(value = "/execution/pass/{procInstId}/{taskId}", method = RequestMethod.GET)
-    public Object pass(@PathVariable String procInstId,
-                       @PathVariable String taskId,
-                       @RequestParam(required = false) String[] assignees,
-                       @RequestParam(required = false) String comment,
-                       @RequestParam(required = false) String params) {
+    public void pass(@PathVariable String procInstId,
+                     @PathVariable String taskId,
+                     @RequestParam(required = false) String[] assignees,
+                     @RequestParam(required = false) String comment,
+                     @RequestParam(required = false) String params,
+                     HttpServletResponse response
+    ) throws IOException {
 
         if (StringUtils.isBlank(comment)) {
             comment = "";
@@ -382,26 +386,122 @@ public class ProcessController {
                 }
             }
         }
-        return "success";
+        response.sendRedirect("/view/execution/list");
     }
 
     /**
      * 任务节点审批驳回.
+     *
+     * @param procInstId
+     * @param taskId
+     * @param comment
+     * @param destTaskKey 驳回到的节点
+     * @param response
+     * @throws IOException
      */
     @RequestMapping(value = "/execution/back/{procInstId}/{taskId}", method = RequestMethod.GET)
-    public Object back(@PathVariable String procInstId,
-                       @PathVariable String taskId,
-                       @RequestParam(required = false) String comment) {
+    public void back(@PathVariable String procInstId,
+                     @PathVariable String taskId,
+                     @RequestParam(required = false) String comment,
+                     @RequestParam(required = false) String destTaskKey,
+                     HttpServletResponse response) throws IOException {
 
         if (StringUtils.isBlank(comment)) {
             comment = "";
         }
         taskService.addComment(taskId, procInstId, comment);
-        ProcessInstance pi = runtimeService.createProcessInstanceQuery().processInstanceId(procInstId)
+        Map<String, Object> variables;
+        // 取得当前任务
+        HistoricTaskInstance currTask = historyService
+                .createHistoricTaskInstanceQuery().taskId(taskId)
                 .singleResult();
-        // 删除流程实例
-        runtimeService.deleteProcessInstance(procInstId, "backed");
-        return "success";
+        // 取得流程实例
+        ProcessInstance instance = runtimeService
+                .createProcessInstanceQuery()
+                .processInstanceId(currTask.getProcessInstanceId())
+                .singleResult();
+        if (instance == null) {
+
+            throw new IllegalArgumentException("流程已经结束");
+        }
+        variables = instance.getProcessVariables();
+        // 取得流程定义
+        ProcessDefinitionEntity definition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
+                .getDeployedProcessDefinition(currTask
+                        .getProcessDefinitionId());
+        if (definition == null) {
+            throw new IllegalArgumentException("流程定义未找到");
+        }
+        // 取得上一步活动
+        ActivityImpl currActivity = ((ProcessDefinitionImpl) definition)
+                .findActivity(currTask.getTaskDefinitionKey());
+        List<PvmTransition> nextTransitionList = currActivity
+                .getIncomingTransitions();
+        // 清除当前活动的出口
+        List<PvmTransition> oriPvmTransitionList = new ArrayList<PvmTransition>();
+        List<PvmTransition> pvmTransitionList = currActivity
+                .getOutgoingTransitions();
+        for (PvmTransition pvmTransition : pvmTransitionList) {
+            oriPvmTransitionList.add(pvmTransition);
+        }
+        pvmTransitionList.clear();
+
+        // 建立新出口
+        List<TransitionImpl> newTransitions = new ArrayList<TransitionImpl>();
+        for (PvmTransition nextTransition : nextTransitionList) {
+            PvmActivity nextActivity = nextTransition.getSource();
+            ActivityImpl nextActivityImpl = ((ProcessDefinitionImpl) definition)
+                    .findActivity(nextActivity.getId());
+            TransitionImpl newTransition = currActivity
+                    .createOutgoingTransition();
+            newTransition.setDestination(nextActivityImpl);
+            newTransitions.add(newTransition);
+        }
+        // 完成任务
+        List<Task> tasks = taskService.createTaskQuery()
+                .processInstanceId(instance.getId())
+                .taskDefinitionKey(currTask.getTaskDefinitionKey()).list();
+        for (Task task : tasks) {
+            taskService.complete(task.getId(), variables);
+            historyService.deleteHistoricTaskInstance(task.getId());
+        }
+        // 恢复方向
+        for (TransitionImpl transitionImpl : newTransitions) {
+            currActivity.getOutgoingTransitions().remove(transitionImpl);
+        }
+        for (PvmTransition pvmTransition : oriPvmTransitionList) {
+            pvmTransitionList.add(pvmTransition);
+        }
+        response.sendRedirect("/view/execution/list");
+    }
+
+    /**
+     * @return
+     * @Description (通过任务key, 获取对应的节点信息)
+     * @author feizhou
+     * @Date 2018年3月28日下午1:53:29
+     * @version 1.0.0
+     */
+    public ActivityImpl getActivityImpl(String destTaskKey, String processDefinitionId) {
+        // 获得当前流程的定义模型
+        ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
+                .getDeployedProcessDefinition(processDefinitionId);
+
+        // 获得当前流程定义模型的所有任务节点
+        List<ActivityImpl> activitilist = processDefinition.getActivities();
+        // 获得当前活动节点和驳回的目标节点"draft"
+        ActivityImpl descActiviti = null;// 当前活动节点
+
+        for (ActivityImpl activityImpl : activitilist) {
+            // 获取节点对应的key
+            String taskKey = activityImpl.getId();
+            // 确定当前活动activiti节点
+            if (destTaskKey.equals(taskKey)) {
+                descActiviti = activityImpl;
+                break;
+            }
+        }
+        return descActiviti;
     }
 
     /**
@@ -613,6 +713,7 @@ public class ProcessController {
         return (Boolean) e.getValue(context);
     }
 
+
     /**
      * 获取流程图片.
      *
@@ -778,5 +879,16 @@ public class ProcessController {
 
         return result;
     }
+
+    /**
+     * 历史记录列表.
+     */
+    @RequestMapping(value = "/history/finished-list", method = RequestMethod.GET)
+    public List<HistoricTaskInstance> historyList(org.springframework.ui.Model model) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
+                .finished().orderByTaskCreateTime().desc().list();
+        return list;
+    }
+
 
 }
