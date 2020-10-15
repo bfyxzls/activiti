@@ -14,6 +14,16 @@
 13. 删除任务：/model/delete/{任务id}
 14. 删除任务的历史：/model/deleteHistoric/{任务id}
 15. 删除运行中的实例：/model/delInsByIds/{流程实例id}
+# 操作接口
+1. 审核通过
+2. 驳回
+3. 会签，多个审批人进行审核，相满足一定数量的通过数后，去下一节点
+4. 网关-并行，当多个并行的分支都通过后，才到达下一节点
+5. 网关-互斥，满足哪个走哪个，然后到哪个的下一节点
+## 会签
+* 多实例类型： 并行(parallel)， 顺序(sequential)
+* 集合（多实例）：主要指需要参与会签的人
+* 完成条件（多实现)：${complete/allTask==1}，表示当完成会签数据与所有任务数的比值
 # 数据流向
 ## 建立模型
 * http://localhost:8081/model/create ACT_RE_MODEL,ACT_GE_BYTEARRAY

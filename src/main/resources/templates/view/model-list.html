@@ -4,7 +4,10 @@
       layout:decorator="layout">
 <div layout:fragment="content">
 
-
+    <ul class="nav nav-pills">
+        <li role="presentation"><a target="_blank"  class="btn btn-primary"  th:href="@{/model/create}">添加模型</a></li>
+        <li role="presentation"><a target="_blank"  class="btn btn-success"   th:href="@{/view/deployByFile}">上传模型</a></li>
+    </ul>
     <!--遍历数组-->
     <table class="table table-bordered table_number">
         <thead>

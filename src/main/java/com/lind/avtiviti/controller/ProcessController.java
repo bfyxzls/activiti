@@ -7,11 +7,20 @@ import com.google.common.collect.ImmutableMap;
 import com.lind.avtiviti.config.ActivitiConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.Process;
-import org.activiti.bpmn.model.*;
+import org.activiti.bpmn.model.SequenceFlow;
+import org.activiti.bpmn.model.StartEvent;
+import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
-import org.activiti.engine.*;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngineConfiguration;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
@@ -41,7 +50,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,7 +65,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -212,31 +232,7 @@ public class ProcessController {
 
     }
 
-    /**
-     * 激活流程定义，通过/deployment/list来查看流程列表里的ACT_RE_PROCDEF.
-     *
-     * @param procDefId ACT_RE_PROCDEF.ID_
-     */
-    @RequestMapping(value = "/execution/active/{procDefId}", method = RequestMethod.GET)
-    public String active(@PathVariable String procDefId) {
-        repositoryService.activateProcessDefinitionById(procDefId, true, new Date());
-        return "激活成功";
-    }
 
-    /**
-     * 启动流程实例 数据在ACT_RU_TASK和ACT_RU_JOB和ACT_RU_EXECUTION表生成记录.
-     * /execution/list接口可以获取到数据
-     *
-     * @param procDefId act_re_procdef.ID_
-     */
-    @RequestMapping(value = "/execution/start/{procDefId}", method = RequestMethod.GET)
-    public void createInstance(@PathVariable String procDefId, @RequestParam String title, HttpServletResponse response) throws IOException {
-        // 启动流程
-        ProcessInstance pi = runtimeService.startProcessInstanceById(procDefId);
-        // 设置流程实例名称
-        runtimeService.setProcessInstanceName(pi.getId(), title);
-        response.sendRedirect("/view/execution/list");
-    }
 
     /**
      * 当前运行中的流程实例列表，应该是启动了的流程（/execution/start/会出现的流程）.
@@ -307,205 +303,6 @@ public class ProcessController {
         return processes;
     }
 
-    /**
-     * 流程实例的任务的审批.
-     *
-     * @param procInstId 流程实例ID ACT_RU_TASK.PROC_INST_ID_
-     * @param taskId     任务ID ACT_RU_TASK.ID_
-     * @param assignees  分配人
-     * @param comment    备注
-     */
-    @RequestMapping(value = "/execution/pass/{procInstId}/{taskId}", method = RequestMethod.GET)
-    public void pass(@PathVariable String procInstId,
-                     @PathVariable String taskId,
-                     @RequestParam(required = false) String[] assignees,
-                     @RequestParam(required = false) String comment,
-                     @RequestParam(required = false) String params,
-                     HttpServletResponse response
-    ) throws IOException {
-
-        if (StringUtils.isBlank(comment)) {
-            comment = "";
-        }
-        taskService.addComment(taskId, procInstId, comment);
-        ProcessInstance pi = runtimeService.createProcessInstanceQuery().processInstanceId(procInstId)
-                .singleResult();
-        Map map = new HashMap();
-        if (StringUtils.isNoneBlank(params)) {
-            String[] keys = StringUtils.split(params, "|");
-            for (String val : keys) {
-                String[] vals = StringUtils.split(val, "_");
-                map.put(vals[0], vals[1]);
-            }
-        }
-
-        taskService.complete(taskId, map);
-
-        //判读是否会签结束，如果结束则给下一个节点赋  审批人
-        List<Task> tasks = taskService.createTaskQuery().processInstanceId(procInstId).list();
-        if (!CollectionUtils.isEmpty(tasks)) {
-            Map<String, Object> variablesMap = taskService.getVariables(tasks.get(0).getId());
-            Object signResult = variablesMap.get("SignResult");
-            //说明这里是会签过来的，可以直接从历史记录中获取之前的审批人作为审批人
-            if (signResult != null && StringUtils.isNotBlank(signResult.toString())) {
-                //查询历史审批记录获取当前节点的历史审批人
-                List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
-                        .processInstanceId(procInstId).finished().orderByTaskCreateTime().desc().list();
-                String assignss = "";
-                for (HistoricTaskInstance value : list) {
-                    //说明找到最近的
-                    if ("undertaking_department".equals(value.getTaskDefinitionKey())) {
-                        assignss = value.getAssignee();
-                        break;
-                    }
-                }
-                if (StringUtils.isNotBlank(assignss)) {
-                    if (tasks.size() > 0) {
-                        taskService.setAssignee(tasks.get(0).getId(), assignss);
-                    }
-                }
-            }
-        }
-        response.sendRedirect("/view/execution/list");
-    }
-
-    public String findPreviousId(String taskId) {
-        Task task = null;
-        Map<Integer, String> pList = new HashMap<>();
-
-        task = taskService.createTaskQuery()//
-                .taskId(taskId)//使用任务ID查询
-                .singleResult();
-
-        if (task == null) {
-            throw new IllegalArgumentException("任务不存在");
-        }
-        String processInstanceId = task.getProcessInstanceId();
-        List<HistoricTaskInstance> list = historyService//与历史数据（历史表）相关的service
-                .createHistoricTaskInstanceQuery()//创建历史任务实例查询
-                .processInstanceId(processInstanceId)
-                .list();
-        HistoricTaskInstance historicTaskInstance=list.get(list.size() - 2);
-        log.info("上一节点任务ID：{}", historicTaskInstance.getTaskDefinitionKey());
-        return historicTaskInstance.getTaskDefinitionKey();
-    }
-
-    /**
-     * 任务节点审批驳回.
-     *
-     * @param procInstId
-     * @param taskId
-     * @param comment
-     * @param destTaskKey 驳回到的节点
-     * @param response
-     * @throws IOException
-     */
-    @RequestMapping(value = "/execution/back/{procInstId}/{taskId}", method = RequestMethod.GET)
-    public void back(@PathVariable String procInstId,
-                     @PathVariable String taskId,
-                     @RequestParam(required = false) String comment,
-                     @RequestParam(required = false) String destTaskKey,
-                     HttpServletResponse response) throws IOException {
-
-        if (StringUtils.isBlank(comment)) {
-            comment = "";
-        }
-        taskService.addComment(taskId, procInstId, comment);
-        Map<String, Object> variables;
-        // 取得当前任务
-        HistoricTaskInstance currTask = historyService
-                .createHistoricTaskInstanceQuery().taskId(taskId)
-                .singleResult();
-        // 取得流程实例
-        ProcessInstance instance = runtimeService
-                .createProcessInstanceQuery()
-                .processInstanceId(currTask.getProcessInstanceId())
-                .singleResult();
-        if (instance == null) {
-
-            throw new IllegalArgumentException("流程已经结束");
-        }
-        variables = instance.getProcessVariables();
-        // 取得流程定义
-        ProcessDefinitionEntity definition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
-                .getDeployedProcessDefinition(currTask
-                        .getProcessDefinitionId());
-        if (definition == null) {
-            throw new IllegalArgumentException("流程定义未找到");
-        }
-
-        // 取得上一步活动
-        ActivityImpl currActivity = ((ProcessDefinitionImpl) definition)
-                .findActivity(destTaskKey);
-
-        List<PvmTransition> nextTransitionList = currActivity
-                .getIncomingTransitions();
-        // 清除当前活动的出口
-        List<PvmTransition> oriPvmTransitionList = new ArrayList<PvmTransition>();
-        List<PvmTransition> pvmTransitionList = currActivity
-                .getOutgoingTransitions();
-        for (PvmTransition pvmTransition : pvmTransitionList) {
-            oriPvmTransitionList.add(pvmTransition);
-        }
-        pvmTransitionList.clear();
-
-        // 建立新出口
-        List<TransitionImpl> newTransitions = new ArrayList<TransitionImpl>();
-        for (PvmTransition nextTransition : nextTransitionList) {
-            PvmActivity nextActivity = nextTransition.getSource();
-            ActivityImpl nextActivityImpl = ((ProcessDefinitionImpl) definition)
-                    .findActivity(nextActivity.getId());
-            TransitionImpl newTransition = currActivity
-                    .createOutgoingTransition();
-            newTransition.setDestination(nextActivityImpl);
-            newTransitions.add(newTransition);
-        }
-        // 完成任务
-//        List<Task> tasks = taskService.createTaskQuery()
-//                .processInstanceId(instance.getId())
-//                .taskDefinitionKey(currTask.getTaskDefinitionKey()).list();
-//        for (Task task : tasks) {
-//            taskService.complete(task.getId(), variables);
-//            historyService.deleteHistoricTaskInstance(task.getId());
-//        }
-        // 恢复方向
-        for (TransitionImpl transitionImpl : newTransitions) {
-            currActivity.getOutgoingTransitions().remove(transitionImpl);
-        }
-        for (PvmTransition pvmTransition : oriPvmTransitionList) {
-            pvmTransitionList.add(pvmTransition);
-        }
-        response.sendRedirect("/view/execution/list");
-    }
-
-    /**
-     * @return
-     * @Description (通过任务key, 获取对应的节点信息)
-     * @author feizhou
-     * @Date 2018年3月28日下午1:53:29
-     * @version 1.0.0
-     */
-    public ActivityImpl getActivityImpl(String destTaskKey, String processDefinitionId) {
-        // 获得当前流程的定义模型
-        ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
-                .getDeployedProcessDefinition(processDefinitionId);
-
-        // 获得当前流程定义模型的所有任务节点
-        List<ActivityImpl> activitilist = processDefinition.getActivities();
-        // 获得当前活动节点和驳回的目标节点"draft"
-        ActivityImpl descActiviti = null;// 当前活动节点
-
-        for (ActivityImpl activityImpl : activitilist) {
-            // 获取节点对应的key
-            String taskKey = activityImpl.getId();
-            // 确定当前活动activiti节点
-            if (destTaskKey.equals(taskKey)) {
-                descActiviti = activityImpl;
-                break;
-            }
-        }
-        return descActiviti;
-    }
 
     /**
      * 第一个流程节点.

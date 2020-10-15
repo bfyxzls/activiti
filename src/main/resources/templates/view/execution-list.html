@@ -34,20 +34,25 @@
         <thead>
         <tr>
             <th>ID</th>
-            <th>proDefId</th>
+            <th>time</th>
+            <th>processDefinitionId</th>
             <th>isSuspended</th>
             <th>taskId</th>
             <th>taskName</th>
+            <th>assignee</th>
             <th></th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="item:${result}">
             <td th:text="${item.id}"></td>
+            <td th:text="${item.time}"></td>
             <td th:text="${item.proDefId}"></td>
             <td th:text="${item.isSuspended}"></td>
             <td th:text="${item.taskId}"></td>
             <td th:text="${item.taskName}"></td>
+            <td th:text="${item.assignee}"></td>
+
             <td>
                 <input type="hidden" name="id" th:value="${item.id}">
                 <input type="hidden" name="taskId" th:value="${item.taskId}">
@@ -55,7 +60,7 @@
                 <button class="btn btn-success btn-xs apply" type="button">审批</button>
                 驳回节点：<input type="text" name="destTaskKey">
                 <button class="btn btn-danger btn-xs back" type="button">驳回</button>
-
+                <a class="btn btn-success btn-xs" th:href="@{/task/complete/{id}(id=${item.taskId})}">完成</a>
                 <a class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.id})}">流程图</a>
             </td>
         </tr>
