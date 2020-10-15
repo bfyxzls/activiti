@@ -3,6 +3,10 @@
       xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
       layout:decorator="layout">
 <div layout:fragment="content">
+    <ol class="breadcrumb">
+        <li>工作流</li>
+        <li>部署流程列表</li>
+    </ol>
     <!--遍历数组-->
     <table class="table table-bordered">
         <thead>
@@ -25,6 +29,8 @@
             <td th:text="${item.time}"></td>
             <td><a class="btn btn-primary btn-xs"
                    th:href="@{/execution/start/{id}?title={title}(id=${item.proDefId},title=${item.name})}">启动</a>
+                <a class="btn btn-danger btn-xs" th:href="@{/view/deployment/node-list/{id}(id=${item.proDefId})}">节点配置</a>
+
                 <a class="btn btn-danger btn-xs" th:href="@{/deployment/del/{id}(id=${item.proDefId})}">删除</a>
             </td>
         </tr>

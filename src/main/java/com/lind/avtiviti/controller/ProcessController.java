@@ -38,7 +38,6 @@ import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Deployment;
-import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -49,6 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.MediaType;
+import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,9 +76,7 @@ import java.util.Map;
 @Slf4j
 public class ProcessController {
 
-    static final String modelName = "modelName";
-    static final String modelKey = "modelKey";
-    static final String description = "description";
+
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
@@ -97,173 +95,6 @@ public class ProcessController {
     ActivitiConfig.ActivitiExtendProperties properties;
     @Autowired
     HttpMessageConverters httpMessageConverters;
-
-    /**
-     * 建立页面，同时也保存.
-     */
-    @GetMapping("/model/create")
-    public void createModel(HttpServletRequest request, HttpServletResponse response) {
-        try {
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            ObjectNode editorNode = objectMapper.createObjectNode();
-            editorNode.put("id", "canvas");
-            editorNode.put("resourceId", "canvas");
-            ObjectNode stencilSetNode = objectMapper.createObjectNode();
-            stencilSetNode.put("namespace", "http://b3mn.org/stencilset/bpmn2.0#");
-            editorNode.putPOJO("stencilset", stencilSetNode);
-
-            ObjectNode modelObjectNode = objectMapper.createObjectNode();
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, modelName);
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, description);
-            Model modelData = repositoryService.newModel();
-            modelData.setMetaInfo(modelObjectNode.toString());
-            modelData.setName(modelName);
-            modelData.setKey(modelKey);
-
-            //保存模型
-            repositoryService.saveModel(modelData);
-            repositoryService.addModelEditorSource(modelData.getId(),
-                    editorNode.toString().getBytes(StandardCharsets.UTF_8));
-            response
-                    .sendRedirect(request.getContextPath() + "/modeler.html?modelId=" + modelData.getId());
-        } catch (Exception e) {
-            e.getStackTrace();
-        }
-    }
-
-    @GetMapping("/model/delete")
-    public void delModel(String modelId, HttpServletResponse response) throws IOException {
-        repositoryService.deleteModel(modelId);
-        response.sendRedirect("/view/model/list");
-    }
-
-    /**
-     * 模模型列表.
-     */
-    @ResponseBody
-    @RequestMapping(value = "/model/list", method = RequestMethod.GET)
-    public Object modelist() {
-        List<Model> list = processEngine.getRepositoryService().createModelQuery()
-                .orderByCreateTime()
-                .desc()
-                .list();
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (Model item : list) {
-            result.add(ImmutableMap.of(
-                    "id", item.getId(),
-                    "version", item.getVersion(),
-                    "name", item.getName()
-            ));
-        }
-        return list;
-
-    }
-
-    /**
-     * 模型部署成为流程.
-     */
-    @RequestMapping(value = "/model/deploy/{id}", method = RequestMethod.GET)
-    public void deploy(@PathVariable String id, HttpServletResponse response) throws IOException {
-
-        // 获取模型
-        Model modelData = repositoryService.getModel(id);
-        byte[] bytes = repositoryService.getModelEditorSource(modelData.getId());
-
-        if (bytes == null) {
-            throw new IllegalArgumentException("模型数据为空，请先成功设计流程并保存");
-        }
-
-        try {
-            JsonNode modelNode = new ObjectMapper().readTree(bytes);
-            BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-            if (model.getProcesses().size() == 0) {
-                throw new IllegalArgumentException("模型不符要求，请至少设计一条主线流程");
-            }
-            byte[] bpmnBytes = new BpmnXMLConverter().convertToXML(model);
-            // 部署发布模型流程
-            String processName = modelData.getName() + ".bpmn20.xml";
-            Deployment deployment = repositoryService.createDeployment().name(modelData.getName())
-                    .addString(processName, new String(bpmnBytes, StandardCharsets.UTF_8)).deploy();
-
-            // 设置流程分类 保存扩展流程至数据库
-            List<ProcessDefinition> list = repositoryService.createProcessDefinitionQuery()
-                    .deploymentId(deployment.getId()).list();
-
-            for (ProcessDefinition pd : list) {
-                log.info(pd.getName());
-            }
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw new IllegalArgumentException(e.getMessage());
-        }
-
-        response.sendRedirect("/view/deployment/list");
-    }
-
-
-    /**
-     * 流程列表.
-     */
-    @ResponseBody
-    @RequestMapping(value = "/deployment/list", method = RequestMethod.GET)
-    public Object deployment(Model model) {
-        List<Deployment> list = processEngine.getRepositoryService().createDeploymentQuery()
-                .orderByDeploymentId()
-                .desc()
-                .list();
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (Deployment item : list) {
-            ProcessDefinition processDefinition = processEngine.getRepositoryService()
-                    .createProcessDefinitionQuery()
-                    .deploymentId(item.getId())
-                    .singleResult();
-            result.add(ImmutableMap.of(
-                    "id", item.getId(),
-                    "time", item.getDeploymentTime(),
-                    "name", item.getName(),
-                    "proDefId", processDefinition.getId()
-            ));
-        }
-        return result;
-
-    }
-
-
-
-    /**
-     * 当前运行中的流程实例列表，应该是启动了的流程（/execution/start/会出现的流程）.
-     */
-    @RequestMapping(value = "/execution/list", method = RequestMethod.GET)
-    public Object execution() {
-        List<ProcessInstance> list =
-                runtimeService.createProcessInstanceQuery()
-                        .orderByProcessInstanceId()
-                        .desc()
-                        .list();
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (ProcessInstance item : list) {
-            log.info("execution.id={},proc_inst_id={},proc_def_id={},isSuspended={}", item.getId(),
-                    item.getProcessInstanceId(), item.getProcessDefinitionId(), item.isSuspended());
-            Task task =
-                    taskService.createTaskQuery()
-                            .active()
-                            .processInstanceId(item.getId())
-                            .singleResult();
-            result.add(ImmutableMap.of(
-                    "id", item.getId(),
-                    "proDefId", item.getProcessDefinitionId(),
-                    "isSuspended", item.isSuspended(),
-                    "taskId", task.getId(),
-                    "taskName", task.getName()
-            ));
-        }
-        return result;
-    }
 
 
     /**
@@ -289,20 +120,6 @@ public class ProcessController {
         List<ProcessInstance> processInstanceList = query.listPage(1, 10);
         return processInstanceList;
     }
-
-
-    /**
-     * 通过流程定义id获取流程节点.
-     *
-     * @param procDefId 流程定义ID
-     */
-    @RequestMapping(value = "/execution/getProcessNode/{procDefId}", method = RequestMethod.GET)
-    public Object getProcessNode(@PathVariable String procDefId) {
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
-        List<Process> processes = bpmnModel.getProcesses();
-        return processes;
-    }
-
 
     /**
      * 第一个流程节点.
@@ -690,5 +507,18 @@ public class ProcessController {
         return list;
     }
 
+    /**
+     * 通过流程定义id获取流程节点.
+     *
+     * @param procDefId 流程定义ID
+     */
+    @RequestMapping(value = "/deployment/node-list/{procDefId}", method = RequestMethod.GET)
+    public List<Process> getProcessNode(@PathVariable String procDefId, Model model) {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
+        List<Process> processes = bpmnModel.getProcesses();
+        model.addAttribute("result",processes);
+        // return "view/node-list";
+        return processes;
+    }
 
 }

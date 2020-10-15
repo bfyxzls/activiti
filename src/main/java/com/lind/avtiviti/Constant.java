@@ -14,4 +14,17 @@ public interface Constant {
      * 总的会签人
      */
     String allTask = "allTask";
+    /**
+     * 模型名称
+     */
+    String modelName = "modelName";
+    /**
+     * 模型key
+     */
+    String modelKey = "modelKey";
+    /**
+     * 描述
+     */
+    String description = "description";
+
 }

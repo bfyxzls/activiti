@@ -1,11 +1,15 @@
 package com.lind.avtiviti.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lind.avtiviti.Constant;
+import lombok.extern.slf4j.Slf4j;
+import org.activiti.bpmn.converter.BpmnXMLConverter;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.editor.constants.ModelDataJsonConstants;
+import org.activiti.editor.language.json.converter.BpmnJsonConverter;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -14,29 +18,26 @@ import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
+import org.activiti.engine.repository.Deployment;
+import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * 动作处理.
  */
 @RestController
+@Slf4j
 public class ActionController {
     @Autowired
     ObjectMapper objectMapper;
@@ -50,6 +51,88 @@ public class ActionController {
     HistoryService historyService;
     @Autowired
     TaskService taskService;
+
+    /**
+     * 建立页面，同时也保存.
+     */
+    @GetMapping("/model/create")
+    public void createModel(HttpServletRequest request, HttpServletResponse response) {
+        try {
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode editorNode = objectMapper.createObjectNode();
+            editorNode.put("id", "canvas");
+            editorNode.put("resourceId", "canvas");
+            ObjectNode stencilSetNode = objectMapper.createObjectNode();
+            stencilSetNode.put("namespace", "http://b3mn.org/stencilset/bpmn2.0#");
+            editorNode.putPOJO("stencilset", stencilSetNode);
+
+            ObjectNode modelObjectNode = objectMapper.createObjectNode();
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, Constant.modelName);
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, Constant.description);
+            Model modelData = repositoryService.newModel();
+            modelData.setMetaInfo(modelObjectNode.toString());
+            modelData.setName(Constant.modelName);
+            modelData.setKey(Constant.modelKey);
+
+            //保存模型
+            repositoryService.saveModel(modelData);
+            repositoryService.addModelEditorSource(modelData.getId(),
+                    editorNode.toString().getBytes(StandardCharsets.UTF_8));
+            response
+                    .sendRedirect(request.getContextPath() + "/modeler.html?modelId=" + modelData.getId());
+        } catch (Exception e) {
+            e.getStackTrace();
+        }
+    }
+
+    @GetMapping("/model/delete")
+    public void delModel(String modelId, HttpServletResponse response) throws IOException {
+        repositoryService.deleteModel(modelId);
+        response.sendRedirect("/view/model/list");
+    }
+
+    /**
+     * 模型部署成为流程.
+     */
+    @RequestMapping(value = "/model/deploy/{id}", method = RequestMethod.GET)
+    public void deploy(@PathVariable String id, HttpServletResponse response) throws IOException {
+
+        // 获取模型
+        Model modelData = repositoryService.getModel(id);
+        byte[] bytes = repositoryService.getModelEditorSource(modelData.getId());
+
+        if (bytes == null) {
+            throw new IllegalArgumentException("模型数据为空，请先成功设计流程并保存");
+        }
+
+        try {
+            JsonNode modelNode = new ObjectMapper().readTree(bytes);
+            BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
+            if (model.getProcesses().size() == 0) {
+                throw new IllegalArgumentException("模型不符要求，请至少设计一条主线流程");
+            }
+            byte[] bpmnBytes = new BpmnXMLConverter().convertToXML(model);
+            // 部署发布模型流程
+            String processName = modelData.getName() + ".bpmn20.xml";
+            Deployment deployment = repositoryService.createDeployment().name(modelData.getName())
+                    .addString(processName, new String(bpmnBytes, StandardCharsets.UTF_8)).deploy();
+
+            // 设置流程分类 保存扩展流程至数据库
+            List<ProcessDefinition> list = repositoryService.createProcessDefinitionQuery()
+                    .deploymentId(deployment.getId()).list();
+
+            for (ProcessDefinition pd : list) {
+                log.info(pd.getName());
+            }
+        } catch (Exception e) {
+            log.error(e.toString());
+            throw new IllegalArgumentException(e.getMessage());
+        }
+
+        response.sendRedirect("/view/deployment/list");
+    }
 
     /**
      * 激活流程定义，通过/deployment/list来查看流程列表里的ACT_RE_PROCDEF.
@@ -231,4 +314,6 @@ public class ActionController {
         }
         response.sendRedirect("/view/execution/list");
     }
+
+
 }

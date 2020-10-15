@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      layout:decorator="layout">
+<div layout:fragment="content">
+
+    <ol class="breadcrumb">
+        <li>工作流</li>
+        <li>节点配置</li>
+    </ol>
+    <!--遍历数组-->
+    <table class="table table-bordered table_number">
+        <thead>
+        <tr>
+            <th>模型ID</th>
+            <th>${result.id}</th>
+            <th>模型名称</th>
+            <th>${result.name}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item:${result.flowElements}">
+            <td>节点ID</td>
+            <td th:text="${item.id}"></td>
+            <td>节点名称</td>
+            <td th:text="${item.name}"></td>
+            <td>分配人</td>
+            <td><input type="assignee"></td>
+
+        </tr>
+        </tbody>
+    </table>
+</div>
+</html>

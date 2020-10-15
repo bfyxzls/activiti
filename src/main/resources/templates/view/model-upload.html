@@ -3,6 +3,10 @@
         xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
         layout:decorator="layout">
 <div layout:fragment="content">
+    <ol class="breadcrumb">
+        <li>工作流</li>
+        <li>上传模型</li>
+    </ol>
     <form  class="form-horizontal" action="/view/deployByFile" method="post" enctype="multipart/form-data">
         <div class="form-group">
             <label>

@@ -7,6 +7,7 @@ import com.lind.avtiviti.config.ActivitiConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.Process;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.HistoryService;
@@ -250,7 +251,7 @@ public class ViewController {
     }
 
     /**
-     * 历史记录列表.
+     * 已完成的历史记录列表.
      */
     @RequestMapping(value = "/history/finished-list", method = RequestMethod.GET)
     public String historyList(Model model) {
@@ -260,4 +261,16 @@ public class ViewController {
         return "view/history-list";
     }
 
+    /**
+     * 通过流程定义id获取流程节点.
+     *
+     * @param procDefId 流程定义ID
+     */
+    @RequestMapping(value = "/deployment/node-list/{procDefId}", method = RequestMethod.GET)
+    public String getProcessNode(@PathVariable String procDefId,Model model) {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
+        List<Process> processes = bpmnModel.getProcesses();
+        model.addAttribute("result",processes.get(0));
+       return "view/node-list";
+    }
 }
