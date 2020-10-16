@@ -3,21 +3,29 @@
         xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
         layout:decorator="layout">
 <div layout:fragment="content">
-    <ol class="breadcrumb">
-        <li>工作流</li>
-        <li>上传模型</li>
-    </ol>
-    <form  class="form-horizontal" action="/view/deployByFile" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>
-                选择文件：
-            </label>
-            <input type="file" name="file" class="form-control">
-            <p class="help-block">选择一个模型文件</p>
-        </div>
 
-        <button type="submit" class="btn btn-primary ">部署</button>
-    </form>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <ol class="breadcrumb">
+                <li>工作流</li>
+                <li>上传模型</li>
+            </ol>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" action="/view/deployByFile" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>
+                        选择文件：
+                    </label>
+                    <input type="file" name="file" class="form-control">
+                    <p class="help-block">选择一个模型文件</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary ">部署</button>
+            </form>
+        </div>
+    </div>
+
 
 </div>
 </html>

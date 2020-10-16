@@ -9,11 +9,11 @@ public interface Constant {
     /**
      * 完全数
      */
-    String complete = "complete";
+    String completeCount = "complete";
     /**
      * 总的会签人
      */
-    String allTask = "allTask";
+    String allTaskCount = "allTask";
     /**
      * 模型名称
      */
@@ -26,5 +26,9 @@ public interface Constant {
      * 描述
      */
     String description = "description";
+    /**
+     * 会议人集合key
+     */
+    String countersignLeaders="countersignLeaders";
 
 }

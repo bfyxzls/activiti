@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.lind.avtiviti.config.ActivitiConfig;
+import com.lind.avtiviti.vo.ProcessNodeVo;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.Process;
+import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.HistoryService;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -244,7 +249,9 @@ public class ViewController {
                         .build());
             }
         }
-        result = result.stream().sorted((i, j) -> longCompare((Date) j.get("time"), (Date) i.get("time"))).collect(Collectors.toList());
+        result = result.stream()
+                .sorted((i, j) -> longCompare((Date) j.get("time"), (Date) i.get("time")))
+                .collect(Collectors.toList());
 
         model.addAttribute("result", result);
         return "view/execution-list";
@@ -267,10 +274,42 @@ public class ViewController {
      * @param procDefId 流程定义ID
      */
     @RequestMapping(value = "/deployment/node-list/{procDefId}", method = RequestMethod.GET)
-    public String getProcessNode(@PathVariable String procDefId,Model model) {
+    public String getProcessNode(@PathVariable String procDefId, Model model) {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
         List<Process> processes = bpmnModel.getProcesses();
-        model.addAttribute("result",processes.get(0));
-       return "view/node-list";
+        List<ProcessNodeVo> processNodeVos = new ArrayList<>();
+        for (Process process : processes) {
+            Collection<FlowElement> elements = process.getFlowElements();
+            for (FlowElement element : elements) {
+                if (element instanceof UserTask) {
+                    ProcessNodeVo node = new ProcessNodeVo();
+                    node.setNodeId(element.getId());
+                    node.setTitle(element.getName());
+                    node.setAssignee(((UserTask) element).getAssignee());
+                    processNodeVos.add(node);
+                }
+            }
+        }
+        log.info("processNodeVos:{}", processNodeVos);
+        model.addAttribute("procDefId", procDefId);
+        model.addAttribute("result", processNodeVos);
+
+        return "view/node-list";
+    }
+
+    @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
+    public void getProcessNode(@RequestParam String procDefId,
+                               String[] nodeId,
+                               String[] assignee,
+                               HttpServletResponse response) throws IOException {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
+        Process process = bpmnModel.getMainProcess(); //获取主流程的，不考虑子流程
+        for (int i = 0; i < nodeId.length; i++) {
+            UserTask flowElement = (UserTask) process.getFlowElement(nodeId[i]);
+            flowElement.setAssignee(assignee[i]);
+            process.removeFlowElement(nodeId[i]);
+            process.addFlowElement(flowElement);
+        }
+        response.sendRedirect("/view/deployment/list");
     }
 }

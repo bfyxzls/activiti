@@ -9,26 +9,21 @@
         <li>节点配置</li>
     </ol>
     <!--遍历数组-->
-    <table class="table table-bordered table_number">
-        <thead>
-        <tr>
-            <th>模型ID</th>
-            <th>${result.id}</th>
-            <th>模型名称</th>
-            <th>${result.name}</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item:${result.flowElements}">
-            <td>节点ID</td>
-            <td th:text="${item.id}"></td>
-            <td>节点名称</td>
-            <td th:text="${item.name}"></td>
-            <td>分配人</td>
-            <td><input type="assignee"></td>
-
-        </tr>
-        </tbody>
-    </table>
+    <form id="form1" class="form-horizontal" method="post" th:action="@{/view/deployment/node-save?procDefId={procDefId}(procDefId=${procDefId})}">
+        <table class="table">
+            <tr th:each="item:${result}">
+                <td th:text="${item.title}"></td>
+                <td>
+                    <input name="nodeId" type="hidden" th:value="${item.nodeId}">
+                    <input name="assignee" th:value="${item.assignee}"></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit" class="btn btn-primary btn-sm">保存
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </form>
 </div>
 </html>

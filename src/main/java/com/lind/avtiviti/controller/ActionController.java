@@ -4,14 +4,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lind.avtiviti.Constant;
+import com.lind.avtiviti.event.AssignedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
-import org.activiti.engine.*;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
@@ -25,13 +33,23 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 动作处理.
@@ -51,6 +69,8 @@ public class ActionController {
     HistoryService historyService;
     @Autowired
     TaskService taskService;
+    @Autowired
+    AssignedEvent assignedEvent;
 
     /**
      * 建立页面，同时也保存.
@@ -157,6 +177,8 @@ public class ActionController {
         ProcessInstance pi = runtimeService.startProcessInstanceById(procDefId);
         // 设置流程实例名称
         runtimeService.setProcessInstanceName(pi.getId(), title);
+        // 添加全局事件
+        runtimeService.addEventListener(assignedEvent, ActivitiEventType.TASK_CREATED);
         response.sendRedirect("/view/execution/list");
     }
 
@@ -216,9 +238,17 @@ public class ActionController {
             for (String val : keys) {
                 String[] vals = StringUtils.split(val, "_");
                 String[] arr = StringUtils.split(vals[1], ",");
-                if (arr != null && arr.length > 1) {//表示多个元素，需要转成数组
-                    map.put(vals[0], Arrays.asList(arr));
+                if (vals[0].equals(Constant.countersignLeaders)) {
+                    //会签操作,需要算出会签人员数,人员分配在AssignedEvent事件里完成
+                    ProcessInstance pi = runtimeService.createProcessInstanceQuery() // 根据流程实例id获取流程实例
+                            .processInstanceId(procInstId)
+                            .singleResult();
+                    BpmnModel bpmnModel = repositoryService.getBpmnModel(pi.getProcessDefinitionId());
+                    UserTask userTask = (UserTask) bpmnModel.getMainProcess().getFlowElement(getNextNode(procInstId));
+                    List<String> assignees = Arrays.asList(StringUtils.split(userTask.getAssignee(), ","));
+                    map.put(Constant.countersignLeaders, assignees);
                 } else {
+                    //普通操作
                     map.put(vals[0], vals[1]);
                 }
             }
@@ -226,6 +256,47 @@ public class ActionController {
 
         taskService.complete(taskId, map);
         response.sendRedirect("/view/execution/list");
+    }
+
+    /**
+     * 获取当前流程的下一个节点
+     *
+     * @param procInstanceId
+     * @return
+     */
+    public String getNextNode(String procInstanceId) {
+        // 1、首先是根据流程ID获取当前任务：
+        List<Task> tasks = processEngine.getTaskService().createTaskQuery().processInstanceId(procInstanceId).list();
+        String nextId = "";
+        for (Task task : tasks) {
+            RepositoryService rs = processEngine.getRepositoryService();
+            // 2、然后根据当前任务获取当前流程的流程定义，然后根据流程定义获得所有的节点：
+            ProcessDefinitionEntity def = (ProcessDefinitionEntity) ((RepositoryServiceImpl) rs)
+                    .getDeployedProcessDefinition(task.getProcessDefinitionId());
+            List<ActivityImpl> activitiList = def.getActivities(); // rs是指RepositoryService的实例
+            // 3、根据任务获取当前流程执行ID，执行实例以及当前流程节点的ID：
+            String excId = task.getExecutionId();
+            RuntimeService runtimeService = processEngine.getRuntimeService();
+            ExecutionEntity execution = (ExecutionEntity) runtimeService.createExecutionQuery().executionId(excId)
+                    .singleResult();
+            String activitiId = execution.getActivityId();
+            // 4、然后循环activitiList
+            // 并判断出当前流程所处节点，然后得到当前节点实例，根据节点实例获取所有从当前节点出发的路径，然后根据路径获得下一个节点实例：
+            for (ActivityImpl activityImpl : activitiList) {
+                String id = activityImpl.getId();
+                if (activitiId.equals(id)) {
+                    log.debug("当前任务：" + activityImpl.getProperty("name")); // 输出某个节点的某种属性
+                    List<PvmTransition> outTransitions = activityImpl.getOutgoingTransitions();// 获取从某个节点出来的所有线路
+                    for (PvmTransition tr : outTransitions) {
+                        PvmActivity ac = tr.getDestination(); // 获取线路的终点节点
+                        log.debug("下一步任务任务：" + ac.getProperty("name"));
+                        nextId = ac.getId();
+                    }
+                    break;
+                }
+            }
+        }
+        return nextId;
     }
 
     /**
