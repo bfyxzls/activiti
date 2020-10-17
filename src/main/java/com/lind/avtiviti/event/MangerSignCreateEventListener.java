@@ -18,13 +18,13 @@ import java.util.List;
 
 /**
  * 会签开始
- * 注意TaskListener里不能直接用@Autowired这些注解.
- * activiti配置事件：delegateExpression="${mangerSignCreateEvent}"
+ * 注意TaskListener里在流程UI中使用类名注册时不能直接用@Autowired这些注解，需要使用代理表达式才可以用这些注解.
+ * activiti配置事件代理表达式：${mangerSignCreateEventListener}
  */
 @Service
 @Transactional
 @Slf4j
-public class MangerSignCreateEvent implements TaskListener {
+public class MangerSignCreateEventListener implements TaskListener {
     @Override
     public void notify(DelegateTask delegateTask) {
         log.info("会签审批开始,委托taskInsId:{},taskId:{}", delegateTask.getProcessInstanceId(), delegateTask.getId());

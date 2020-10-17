@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lind.avtiviti.Constant;
-import com.lind.avtiviti.event.AssignedEvent;
+import com.lind.avtiviti.event.AssignedEventListener;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
@@ -70,7 +70,7 @@ public class ActionController {
     @Autowired
     TaskService taskService;
     @Autowired
-    AssignedEvent assignedEvent;
+    AssignedEventListener assignedEventListener;
 
     /**
      * 建立页面，同时也保存.
@@ -178,7 +178,7 @@ public class ActionController {
         // 设置流程实例名称
         runtimeService.setProcessInstanceName(pi.getId(), title);
         // 添加全局事件
-        runtimeService.addEventListener(assignedEvent, ActivitiEventType.TASK_CREATED);
+        runtimeService.addEventListener(assignedEventListener, ActivitiEventType.TASK_CREATED);
         response.sendRedirect("/view/execution/list");
     }
 
@@ -237,9 +237,8 @@ public class ActionController {
             String[] keys = StringUtils.split(params, "-");
             for (String val : keys) {
                 String[] vals = StringUtils.split(val, "_");
-                String[] arr = StringUtils.split(vals[1], ",");
                 if (vals[0].equals(Constant.countersignLeaders)) {
-                    //会签操作,需要算出会签人员数,人员分配在AssignedEvent事件里完成
+                    //会签操作,需要算出会签人员数,人员分配在AssignedEventListener事件里完成
                     ProcessInstance pi = runtimeService.createProcessInstanceQuery() // 根据流程实例id获取流程实例
                             .processInstanceId(procInstId)
                             .singleResult();

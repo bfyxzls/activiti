@@ -10,12 +10,12 @@ import javax.transaction.Transactional;
 
 /**
  * 会签完成
- * 解决ioc注入问题，在activiti配置时使用表达式delegateExpression="${mangerSignCompleteEvent}"
+ * 解决ioc注入问题，在activiti配置时使用代理表达式${mangerSignCompleteEventListener}
  */
 @Component
 @Transactional
 @Slf4j
-public class MangerSignCompleteEvent implements TaskListener {
+public class MangerSignCompleteEventListener implements TaskListener {
     @Override
     public void notify(DelegateTask delegateTask) {
         log.info("会签审批启动");

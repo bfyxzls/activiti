@@ -21,7 +21,7 @@ import javax.transaction.Transactional;
 @Slf4j
 @Component
 @Transactional
-public class AssignedEvent implements org.activiti.engine.delegate.event.ActivitiEventListener {
+public class AssignedEventListener implements org.activiti.engine.delegate.event.ActivitiEventListener {
 
     @Override
     public void onEvent(ActivitiEvent event) {
