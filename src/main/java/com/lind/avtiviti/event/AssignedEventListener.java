@@ -1,6 +1,5 @@
 package com.lind.avtiviti.event;
 
-import com.lind.avtiviti.config.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.UserTask;
@@ -9,6 +8,7 @@ import org.activiti.engine.delegate.event.ActivitiEntityEvent;
 import org.activiti.engine.delegate.event.ActivitiEvent;
 import org.activiti.engine.delegate.event.impl.ActivitiEntityEventImpl;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -22,6 +22,8 @@ import javax.transaction.Transactional;
 @Component
 @Transactional
 public class AssignedEventListener implements org.activiti.engine.delegate.event.ActivitiEventListener {
+    @Autowired
+    RepositoryService repositoryService;
 
     @Override
     public void onEvent(ActivitiEvent event) {
@@ -38,7 +40,6 @@ public class AssignedEventListener implements org.activiti.engine.delegate.event
 
         if (taskEntity != null && taskEntity instanceof TaskEntity) {
             log.info("统一为UserTask的assignee赋值,processDefinitionId:{},processInstanceId:{}", event.getProcessDefinitionId(), event.getProcessInstanceId());
-            RepositoryService repositoryService = SpringUtil.getObject(RepositoryService.class);
             BpmnModel bpmnModel = repositoryService.getBpmnModel(event.getProcessDefinitionId());
             String flowId = ((TaskEntity) taskEntity).getTaskDefinitionKey();
             UserTask flowElement = (UserTask) bpmnModel.getMainProcess().getFlowElement(flowId);
