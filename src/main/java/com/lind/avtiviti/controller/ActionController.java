@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lind.avtiviti.Constant;
 import com.lind.avtiviti.event.AssignedEventListener;
+import com.lind.avtiviti.event.LoggerEventListener;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
@@ -71,6 +72,8 @@ public class ActionController {
     TaskService taskService;
     @Autowired
     AssignedEventListener assignedEventListener;
+    @Autowired
+    LoggerEventListener loggerEventListener;
 
     /**
      * 建立页面，同时也保存.
@@ -179,6 +182,7 @@ public class ActionController {
         runtimeService.setProcessInstanceName(pi.getId(), title);
         // 添加全局事件
         runtimeService.addEventListener(assignedEventListener, ActivitiEventType.TASK_CREATED);
+        runtimeService.addEventListener(loggerEventListener, ActivitiEventType.TASK_CREATED);
         response.sendRedirect("/view/execution/list");
     }
 
