@@ -27,8 +27,8 @@ public interface Constant {
      */
     String description = "description";
     /**
-     * 会议人集合key
+     * 会议集合标识
      */
-    String countersignLeaders="countersignLeaders";
+    String meeting = "meeting";
 
 }

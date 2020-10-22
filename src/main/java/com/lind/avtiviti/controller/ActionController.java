@@ -4,29 +4,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lind.avtiviti.Constant;
-import com.lind.avtiviti.event.AssignedEventListener;
-import com.lind.avtiviti.event.LoggerEventListener;
+import com.lind.avtiviti.util.ActivitiHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
+import org.activiti.engine.ActivitiException;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
+import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -58,6 +57,8 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class ActionController {
+    public static final String FATHER_SPLIT = "-";
+    public static final String SON_SPLIT = "_";
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
@@ -71,9 +72,7 @@ public class ActionController {
     @Autowired
     TaskService taskService;
     @Autowired
-    AssignedEventListener assignedEventListener;
-    @Autowired
-    LoggerEventListener loggerEventListener;
+    ActivitiHelper activitiHelper;
 
     /**
      * 建立页面，同时也保存.
@@ -180,9 +179,6 @@ public class ActionController {
         ProcessInstance pi = runtimeService.startProcessInstanceById(procDefId);
         // 设置流程实例名称
         runtimeService.setProcessInstanceName(pi.getId(), title);
-        // 添加全局事件
-        runtimeService.addEventListener(assignedEventListener, ActivitiEventType.TASK_CREATED);
-        runtimeService.addEventListener(loggerEventListener, ActivitiEventType.TASK_CREATED);
         response.sendRedirect("/view/execution/list");
     }
 
@@ -227,7 +223,7 @@ public class ActionController {
                      @RequestParam(required = false) String comment,
                      @RequestParam(required = false) String params,
                      HttpServletResponse response
-    ) throws IOException {
+    ) throws Exception {
 
         if (StringUtils.isBlank(comment)) {
             comment = "";
@@ -238,68 +234,31 @@ public class ActionController {
         }
         Map map = new HashMap();
         if (StringUtils.isNoneBlank(params)) {
-            String[] keys = StringUtils.split(params, "-");
+            String[] keys = StringUtils.split(params, FATHER_SPLIT);
             for (String val : keys) {
-                String[] vals = StringUtils.split(val, "_");
-                if (vals[0].equals(Constant.countersignLeaders)) {
+                String[] sonVal = StringUtils.split(val, SON_SPLIT);
+                if (sonVal[0].equals(Constant.meeting)) {
                     //会签操作,需要算出会签人员数,人员分配在AssignedEventListener事件里完成
                     ProcessInstance pi = runtimeService.createProcessInstanceQuery() // 根据流程实例id获取流程实例
                             .processInstanceId(procInstId)
                             .singleResult();
                     BpmnModel bpmnModel = repositoryService.getBpmnModel(pi.getProcessDefinitionId());
-                    UserTask userTask = (UserTask) bpmnModel.getMainProcess().getFlowElement(getNextNode(procInstId));
+                    TaskDefinition taskDefinition = activitiHelper.getNextTaskInfo(procInstId);
+                    UserTask userTask = (UserTask) bpmnModel.getMainProcess().getFlowElement(taskDefinition.getKey());
+                    if (StringUtils.isBlank(userTask.getAssignee())) {
+                        throw new ActivitiException("需要为节点指定人员");
+                    }
                     List<String> assignees = Arrays.asList(StringUtils.split(userTask.getAssignee(), ","));
-                    map.put(Constant.countersignLeaders, assignees);
+                    map.put(Constant.meeting, assignees);
                 } else {
                     //普通操作
-                    map.put(vals[0], vals[1]);
+                    map.put(sonVal[0], sonVal[1]);
                 }
             }
         }
 
         taskService.complete(taskId, map);
         response.sendRedirect("/view/execution/list");
-    }
-
-    /**
-     * 获取当前流程的下一个节点
-     *
-     * @param procInstanceId
-     * @return
-     */
-    public String getNextNode(String procInstanceId) {
-        // 1、首先是根据流程ID获取当前任务：
-        List<Task> tasks = processEngine.getTaskService().createTaskQuery().processInstanceId(procInstanceId).list();
-        String nextId = "";
-        for (Task task : tasks) {
-            RepositoryService rs = processEngine.getRepositoryService();
-            // 2、然后根据当前任务获取当前流程的流程定义，然后根据流程定义获得所有的节点：
-            ProcessDefinitionEntity def = (ProcessDefinitionEntity) ((RepositoryServiceImpl) rs)
-                    .getDeployedProcessDefinition(task.getProcessDefinitionId());
-            List<ActivityImpl> activitiList = def.getActivities(); // rs是指RepositoryService的实例
-            // 3、根据任务获取当前流程执行ID，执行实例以及当前流程节点的ID：
-            String excId = task.getExecutionId();
-            RuntimeService runtimeService = processEngine.getRuntimeService();
-            ExecutionEntity execution = (ExecutionEntity) runtimeService.createExecutionQuery().executionId(excId)
-                    .singleResult();
-            String activitiId = execution.getActivityId();
-            // 4、然后循环activitiList
-            // 并判断出当前流程所处节点，然后得到当前节点实例，根据节点实例获取所有从当前节点出发的路径，然后根据路径获得下一个节点实例：
-            for (ActivityImpl activityImpl : activitiList) {
-                String id = activityImpl.getId();
-                if (activitiId.equals(id)) {
-                    log.debug("当前任务：" + activityImpl.getProperty("name")); // 输出某个节点的某种属性
-                    List<PvmTransition> outTransitions = activityImpl.getOutgoingTransitions();// 获取从某个节点出来的所有线路
-                    for (PvmTransition tr : outTransitions) {
-                        PvmActivity ac = tr.getDestination(); // 获取线路的终点节点
-                        log.debug("下一步任务任务：" + ac.getProperty("name"));
-                        nextId = ac.getId();
-                    }
-                    break;
-                }
-            }
-        }
-        return nextId;
     }
 
     /**

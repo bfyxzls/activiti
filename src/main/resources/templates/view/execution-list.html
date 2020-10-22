@@ -36,10 +36,11 @@
     <table class="table table-bordered">
         <thead>
         <tr>
-            <th>ID</th>
-            <th>time</th>
+            <th>processInstanceId</th>
             <th>processDefinitionId</th>
+            <th>time</th>
             <th>isSuspended</th>
+            <th>executionId</th>
             <th>taskId</th>
             <th>taskName</th>
             <th>assignee</th>
@@ -49,9 +50,10 @@
         <tbody>
         <tr th:each="item:${result}">
             <td th:text="${item.id}"></td>
-            <td th:text="${item.time}"></td>
             <td th:text="${item.proDefId}"></td>
+            <td th:text="${item.time}"></td>
             <td th:text="${item.isSuspended}"></td>
+            <td th:text="${item.executionId}"></td>
             <td th:text="${item.taskId}"></td>
             <td th:text="${item.taskName}"></td>
             <td th:text="${item.assignee}"></td>
@@ -63,8 +65,9 @@
                 驳回节点：<input type="text" name="destTaskKey">
                 <button class="btn btn-success btn-xs apply" type="button">审批</button>
                 <button class="btn btn-danger btn-xs back" type="button">驳回</button>
-                <a class="btn btn-success btn-xs" th:href="@{/task/complete/{id}(id=${item.taskId})}">完成</a>
-                <a class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.id})}">流程图</a>
+                <a class="btn btn-success btn-xs" th:href="@{/view/history/list/{id}(id=${item.id})}">审批历史</a>
+                <a class="btn btn-warning btn-xs" th:href="@{/task/complete/{id}(id=${item.taskId})}">完成</a>
+                <a class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.id})}">实时流程图</a>
             </td>
         </tr>
         </tbody>

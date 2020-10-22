@@ -22,7 +22,7 @@ public class MangerSignCreateEventListener implements TaskListener {
     public void notify(DelegateTask delegateTask) {
         log.info("会签审批开始,委托taskInsId:{},taskId:{}", delegateTask.getProcessInstanceId(), delegateTask.getId());
         // 会签节点的人数，这是由审核开始时为其赋的值
-        List<String> countersignLeaders= (List<String>)delegateTask.getVariable(Constant.countersignLeaders);
+        List<String> countersignLeaders= (List<String>)delegateTask.getVariable(Constant.meeting);
 
         // 初始化变量
         delegateTask.setVariable(Constant.allTaskCount, countersignLeaders.size());

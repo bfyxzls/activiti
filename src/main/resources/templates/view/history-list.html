@@ -14,10 +14,9 @@
         <tr>
             <th>id</th>
             <th>name</th>
-            <th>processInstanceId</th>
             <th>processDefinitionId</th>
-            <th>assignee</th>
-            <th>time</th>
+            <th>startTime</th>
+            <th>endTime</th>
             <th></th>
         </tr>
         </thead>
@@ -25,10 +24,9 @@
         <tr th:each="item:${result}">
             <td th:text="${item.id}"></td>
             <td th:text="${item.name}"></td>
-            <td th:text="${item.processInstanceId}"></td>
             <td th:text="${item.processDefinitionId}"></td>
-            <td th:text="${item.assignee}"></td>
-            <td th:text="${item.time}"></td>
+            <td th:text="${item.startTime}"></td>
+            <td th:text="${item.endTime}"></td>
             <td>
                 <a  class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.processInstanceId})}">流程图</a>
             </td>

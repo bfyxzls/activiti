@@ -19,6 +19,8 @@ import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -230,8 +232,6 @@ public class ViewController {
                         .list();
         List<Map<String, Object>> result = new ArrayList<>();
         for (ProcessInstance item : list) {
-            log.info("execution.id={},proc_inst_id={},proc_def_id={},isSuspended={}", item.getId(),
-                    item.getProcessInstanceId(), item.getProcessDefinitionId(), item.isSuspended());
             List<Task> tasks =
                     taskService.createTaskQuery()
                             .active()
@@ -242,6 +242,8 @@ public class ViewController {
                         .put("id", item.getId())
                         .put("proDefId", item.getProcessDefinitionId())
                         .put("isSuspended", item.isSuspended())
+                        .put("executionId", task.getExecutionId())
+
                         .put("taskId", task.getId())
                         .put("taskName", task.getName())
                         .put("time", task.getCreateTime())
@@ -258,12 +260,30 @@ public class ViewController {
     }
 
     /**
+     * 历史流程列表.
+     */
+    @RequestMapping(value = "/history/list", method = RequestMethod.GET)
+    public String historyList(Model model) {
+        List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery()
+                .finished()
+                .orderByProcessInstanceStartTime()
+                .desc()
+                .list();
+        model.addAttribute("result", list);
+        return "view/history-list";
+    }
+
+    /**
      * 已完成的历史记录列表.
      */
-    @RequestMapping(value = "/history/finished-list", method = RequestMethod.GET)
-    public String historyList(Model model) {
+    @RequestMapping(value = "/history/list/{id}", method = RequestMethod.GET)
+    public String historyList(@PathVariable String id, Model model) {
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
-                .finished().orderByTaskCreateTime().desc().list();
+                .processInstanceId(id)
+                .finished()
+                .orderByTaskCreateTime()
+                .desc()
+                .list();
         model.addAttribute("result", list);
         return "view/history-list";
     }

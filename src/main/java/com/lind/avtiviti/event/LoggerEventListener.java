@@ -20,7 +20,7 @@ public class LoggerEventListener implements org.activiti.engine.delegate.event.A
 
     @Override
     public void onEvent(ActivitiEvent event) {
-        log.info("LoggerEventListener,processDefinitionId:{},processInstanceId:{}", event.getProcessDefinitionId(), event.getProcessInstanceId());
+        log.info("Task Complete[processDefinitionId:{},processInstanceId:{}]", event.getProcessDefinitionId(), event.getProcessInstanceId());
     }
 
     @Override
