@@ -21,6 +21,8 @@ public class ApplicationReadyEventListener implements ApplicationListener<Applic
     LoggerEventListener loggerEventListener;
     @Autowired
     RuntimeService runtimeService;
+    @Autowired
+    NodeAssignedEventListener nodeAssignedEventListener;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -28,5 +30,7 @@ public class ApplicationReadyEventListener implements ApplicationListener<Applic
         runtimeService.addEventListener(assignedEventListener, ActivitiEventType.TASK_CREATED);
         // 添加TASK_COMPLETED触发时订阅的事件
         runtimeService.addEventListener(loggerEventListener, ActivitiEventType.TASK_COMPLETED);
+        runtimeService.addEventListener(nodeAssignedEventListener, ActivitiEventType.TASK_COMPLETED);
+
     }
 }

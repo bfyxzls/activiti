@@ -12,11 +12,11 @@
     <table class="table table-bordered table_number">
         <thead>
         <tr>
-            <th>id</th>
+            <th>taskId</th>
             <th>name</th>
             <th>processDefinitionId</th>
-            <th>startTime</th>
-            <th>endTime</th>
+            <th>processInstanceId</th>
+            <th>time</th>
             <th></th>
         </tr>
         </thead>
@@ -25,11 +25,9 @@
             <td th:text="${item.id}"></td>
             <td th:text="${item.name}"></td>
             <td th:text="${item.processDefinitionId}"></td>
-            <td th:text="${item.startTime}"></td>
-            <td th:text="${item.endTime}"></td>
+            <td th:text="${item.processInstanceId}"></td>
+            <td th:text="${item.time}"></td>
             <td>
-                <a class="btn btn-success btn-xs" th:href="@{/view/task/list/{id}(id=${item.id})}">审批历史</a>
-
                 <a  class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.processInstanceId})}">流程图</a>
             </td>
         </tr>

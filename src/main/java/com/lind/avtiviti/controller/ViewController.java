@@ -20,7 +20,6 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -91,10 +90,12 @@ public class ViewController {
      * 模模型列表.
      */
     @RequestMapping(value = "/model/list", method = RequestMethod.GET)
-    public String modelist(Model model) {
+    public String modelist(Model model,
+                           @RequestParam(required = false, defaultValue = "1") int pageindex,
+                           @RequestParam(required = false, defaultValue = "10") int pagesize) {
         List<org.activiti.engine.repository.Model> list = processEngine.getRepositoryService().createModelQuery()
                 .orderByCreateTime().desc()
-                .list();
+                .listPage(pageindex, pagesize);
 
         model.addAttribute("result", list);
         return "view/model-list";
@@ -193,11 +194,13 @@ public class ViewController {
      * 部署列表.
      */
     @RequestMapping(value = "/deployment/list", method = RequestMethod.GET)
-    public String deployment(org.springframework.ui.Model model) {
+    public String deployment(org.springframework.ui.Model model,
+                             @RequestParam(required = false, defaultValue = "1") int pageindex,
+                             @RequestParam(required = false, defaultValue = "10") int pagesize) {
         List<Deployment> list = processEngine.getRepositoryService().createDeploymentQuery()
                 .orderByDeploymenTime()
                 .desc()
-                .list();
+                .listPage(pageindex, pagesize);
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (Deployment item : list) {
@@ -224,12 +227,14 @@ public class ViewController {
      * 当前运行中的流程实例列表，应该是启动了的流程（/execution/start/会出现的流程）.
      */
     @RequestMapping(value = "/execution/list", method = RequestMethod.GET)
-    public String execution(Model model) {
+    public String execution(Model model,
+                            @RequestParam(required = false, defaultValue = "1") int pageindex,
+                            @RequestParam(required = false, defaultValue = "10") int pagesize) {
         List<ProcessInstance> list =
                 runtimeService.createProcessInstanceQuery()
                         .orderByProcessDefinitionId()
                         .desc()
-                        .list();
+                        .listPage(pageindex, pagesize);
         List<Map<String, Object>> result = new ArrayList<>();
         for (ProcessInstance item : list) {
             List<Task> tasks =
@@ -263,12 +268,15 @@ public class ViewController {
      * 历史流程列表.
      */
     @RequestMapping(value = "/history/list", method = RequestMethod.GET)
-    public String historyList(Model model) {
+    public String historyList(Model model,
+                              @RequestParam(required = false, defaultValue = "1") int pageindex,
+                              @RequestParam(required = false, defaultValue = "10") int pagesize) {
         List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery()
                 .finished()
                 .orderByProcessInstanceStartTime()
                 .desc()
-                .list();
+                .listPage(pageindex, pagesize);
+
         model.addAttribute("result", list);
         return "view/history-list";
     }
@@ -276,8 +284,8 @@ public class ViewController {
     /**
      * 已完成的历史记录列表.
      */
-    @RequestMapping(value = "/history/list/{id}", method = RequestMethod.GET)
-    public String historyList(@PathVariable String id, Model model) {
+    @RequestMapping(value = "/task/list/{id}", method = RequestMethod.GET)
+    public String taskList(@PathVariable String id, Model model) {
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
                 .processInstanceId(id)
                 .finished()
@@ -285,7 +293,7 @@ public class ViewController {
                 .desc()
                 .list();
         model.addAttribute("result", list);
-        return "view/history-list";
+        return "view/task-list";
     }
 
     /**
@@ -317,6 +325,15 @@ public class ViewController {
         return "view/node-list";
     }
 
+    /**
+     * 节点配置.
+     *
+     * @param procDefId
+     * @param nodeId
+     * @param assignee
+     * @param response
+     * @throws IOException
+     */
     @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
     public void getProcessNode(@RequestParam String procDefId,
                                String[] nodeId,
