@@ -9,6 +9,7 @@
     <link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.css}" rel="stylesheet">
     <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
     <script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.js}"></script>
+    <script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap-paginator.js}"></script>
     <script type="text/ecmascript">
         function getUrlRelativePath() {
             var url = document.location.toString();
@@ -26,6 +27,7 @@
             var o = $(".nav").find("li").find("a[href$='"+getUrlRelativePath()+"']");
             o.closest("li").addClass("active").siblings().removeClass("active");
         });
+
     </script>
 </head>
 <body>

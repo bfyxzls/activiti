@@ -93,6 +93,7 @@ public class ViewController {
     public String modelist(Model model,
                            @RequestParam(required = false, defaultValue = "1") int pageindex,
                            @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
         List<org.activiti.engine.repository.Model> list = processEngine.getRepositoryService().createModelQuery()
                 .orderByCreateTime().desc()
                 .listPage(pageindex, pagesize);
@@ -195,8 +196,10 @@ public class ViewController {
      */
     @RequestMapping(value = "/deployment/list", method = RequestMethod.GET)
     public String deployment(org.springframework.ui.Model model,
+                             @RequestParam(required = false) String status,
                              @RequestParam(required = false, defaultValue = "1") int pageindex,
                              @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
         List<Deployment> list = processEngine.getRepositoryService().createDeploymentQuery()
                 .orderByDeploymenTime()
                 .desc()
@@ -208,7 +211,7 @@ public class ViewController {
                     .createProcessDefinitionQuery()
                     .deploymentId(item.getId())
                     .singleResult();
-            if (!processDefinition.isSuspended()) {
+            if (StringUtils.isBlank(status)) {
                 result.add(ImmutableMap.of(
                         "id", item.getId(),
                         "time", item.getDeploymentTime(),
@@ -216,7 +219,26 @@ public class ViewController {
                         "proDefId", processDefinition.getId(),
                         "isSuspended", processDefinition.isSuspended()
                 ));
+            } else if (status.equals("1")) {
+                if (!processDefinition.isSuspended())
+                    result.add(ImmutableMap.of(
+                            "id", item.getId(),
+                            "time", item.getDeploymentTime(),
+                            "name", item.getName(),
+                            "proDefId", processDefinition.getId(),
+                            "isSuspended", processDefinition.isSuspended()
+                    ));
+            } else if (status.equals("2")) {
+                if (processDefinition.isSuspended())
+                    result.add(ImmutableMap.of(
+                            "id", item.getId(),
+                            "time", item.getDeploymentTime(),
+                            "name", item.getName(),
+                            "proDefId", processDefinition.getId(),
+                            "isSuspended", processDefinition.isSuspended()
+                    ));
             }
+
         }
         model.addAttribute("result", result);
         return "view/deployment-list";
@@ -230,9 +252,10 @@ public class ViewController {
     public String execution(Model model,
                             @RequestParam(required = false, defaultValue = "1") int pageindex,
                             @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
         List<ProcessInstance> list =
                 runtimeService.createProcessInstanceQuery()
-                        .orderByProcessDefinitionId()
+                        .orderByProcessInstanceId()
                         .desc()
                         .listPage(pageindex, pagesize);
         List<Map<String, Object>> result = new ArrayList<>();
@@ -242,16 +265,18 @@ public class ViewController {
                             .active()
                             .processInstanceId(item.getId()).list();//并行网关可能是多条任务
             for (Task task : tasks) {
+
+                String owner = task.getOwner() == null ? "" : task.getOwner();
                 String assignee = task.getAssignee() == null ? "" : task.getAssignee();
                 result.add(new ImmutableMap.Builder<String, Object>()
                         .put("id", item.getId())
                         .put("proDefId", item.getProcessDefinitionId())
                         .put("isSuspended", item.isSuspended())
                         .put("executionId", task.getExecutionId())
-
                         .put("taskId", task.getId())
                         .put("taskName", task.getName())
                         .put("time", task.getCreateTime())
+                        .put("owner", owner)
                         .put("assignee", assignee)
                         .build());
             }
@@ -271,8 +296,9 @@ public class ViewController {
     public String historyList(Model model,
                               @RequestParam(required = false, defaultValue = "1") int pageindex,
                               @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
         List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery()
-                .finished()
+                //     .finished()
                 .orderByProcessInstanceStartTime()
                 .desc()
                 .listPage(pageindex, pagesize);
@@ -292,6 +318,7 @@ public class ViewController {
                 .orderByTaskCreateTime()
                 .desc()
                 .list();
+        model.addAttribute("id", id);
         model.addAttribute("result", list);
         return "view/task-list";
     }
@@ -313,7 +340,7 @@ public class ViewController {
                     ProcessNodeVo node = new ProcessNodeVo();
                     node.setNodeId(element.getId());
                     node.setTitle(element.getName());
-                    node.setAssignee(((UserTask) element).getAssignee());
+                    node.setAssignee(((UserTask) element).getOwner()); //指定的角色
                     processNodeVos.add(node);
                 }
             }
@@ -343,10 +370,9 @@ public class ViewController {
         Process process = bpmnModel.getMainProcess(); //获取主流程的，不考虑子流程
         for (int i = 0; i < nodeId.length; i++) {
             UserTask flowElement = (UserTask) process.getFlowElement(nodeId[i]);
-            flowElement.setAssignee(assignee[i]);
-            process.removeFlowElement(nodeId[i]);
-            process.addFlowElement(flowElement);
+            flowElement.setOwner(assignee[i]);
+            process.setValues(flowElement);//数据只保存在内存里，需要添加节点分配数据表才能实现
         }
-        response.sendRedirect("/view/deployment/list");
+         response.sendRedirect("/view/deployment/list");
     }
 }

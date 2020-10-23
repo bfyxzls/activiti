@@ -163,10 +163,10 @@ public class ProcessController {
                 String type = pvmActivity.getProperty("type").toString();
                 if ("userTask".equals(type)) {
                     // 用户任务节点
-                    return pvmActivity.getId();
+                    return pvmActivity.getId()  ;
                 } else if ("endEvent".equals(type)) {
                     // 结束
-                    return "结束节点";
+                    return null;
                 } else if ("exclusiveGateway".equals(type)) {
                     //网关
                     try {

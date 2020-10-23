@@ -16,21 +16,18 @@ import org.springframework.stereotype.Component;
 public class ApplicationReadyEventListener implements ApplicationListener<ApplicationReadyEvent> {
     private static Logger logger = LoggerFactory.getLogger(ApplicationReadyEventListener.class);
     @Autowired
-    AssignedEventListener assignedEventListener;
+    AssignRoleEventListener assignRoleEventListener;
     @Autowired
     LoggerEventListener loggerEventListener;
     @Autowired
     RuntimeService runtimeService;
-    @Autowired
-    NodeAssignedEventListener nodeAssignedEventListener;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // 添加TASK_CREATED触发时订阅的事件
-        runtimeService.addEventListener(assignedEventListener, ActivitiEventType.TASK_CREATED);
+        runtimeService.addEventListener(assignRoleEventListener, ActivitiEventType.TASK_CREATED);
         // 添加TASK_COMPLETED触发时订阅的事件
         runtimeService.addEventListener(loggerEventListener, ActivitiEventType.TASK_COMPLETED);
-        runtimeService.addEventListener(nodeAssignedEventListener, ActivitiEventType.TASK_COMPLETED);
 
     }
 }

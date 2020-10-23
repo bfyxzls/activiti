@@ -3,6 +3,7 @@ package com.lind.avtiviti.util;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.impl.RepositoryServiceImpl;
+import org.activiti.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.javax.el.ExpressionFactory;
@@ -13,6 +14,7 @@ import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
+import org.activiti.engine.impl.pvm.delegate.ActivityBehavior;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.runtime.Execution;
@@ -177,7 +179,7 @@ public class ActivitiHelper {
      * @param processInstanceId 流程实例Id信息
      */
     private TaskDefinition nextTaskDefinition(ActivityImpl activityImpl, String activityId,
-                                              String elString, String processInstanceId) {
+                                      String elString, String processInstanceId) {
 
         PvmActivity ac = null;
 
@@ -221,7 +223,13 @@ public class ActivitiHelper {
                         }
                     }
                 } else if ("userTask".equals(ac.getProperty("type"))) {
-                    return ((UserTaskActivityBehavior) ((ActivityImpl) ac).getActivityBehavior())
+                    ActivityImpl activity = (ActivityImpl) ac;
+                    ActivityBehavior activityBehavior = activity.getActivityBehavior();
+                    // 多任务场景
+                    if (activityBehavior instanceof MultiInstanceActivityBehavior) {
+                        return ((UserTaskActivityBehavior) ((MultiInstanceActivityBehavior) activityBehavior).getInnerActivityBehavior()).getTaskDefinition();
+                    }
+                    return ((UserTaskActivityBehavior) activityBehavior)
                             .getTaskDefinition();
                 }
             }

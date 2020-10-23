@@ -31,4 +31,9 @@ public interface Constant {
      */
     String meeting = "meeting";
 
+    /**
+     * 审批人标示.
+     */
+    String assignee = "assignee";
+
 }

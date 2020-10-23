@@ -1,8 +1,8 @@
 package com.lind.avtiviti.event;
 
+import com.lind.avtiviti.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.Process;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.delegate.event.ActivitiEntityEvent;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 
 /**
+ * 自动将节点配置的角色分(Owner)配到当前任务上.
  * 所有任务在建立时出发的事件,在流程实例启动时添加的.
  * 事件注册：runtimeService.addEventListener(assignedEvent,ActivitiEventType.TASK_CREATED);
  * TaskListener事件完成后,执行ActivitiEventListener
@@ -22,7 +23,7 @@ import javax.transaction.Transactional;
 @Slf4j
 @Component
 @Transactional
-public class NodeAssignedEventListener implements org.activiti.engine.delegate.event.ActivitiEventListener {
+public class AssignRoleEventListener implements org.activiti.engine.delegate.event.ActivitiEventListener {
     @Autowired
     RepositoryService repositoryService;
 
@@ -40,17 +41,16 @@ public class NodeAssignedEventListener implements org.activiti.engine.delegate.e
         }
 
         if (taskEntity != null && taskEntity instanceof TaskEntity) {
+            log.info("统一为UserTask的owner赋值,processDefinitionId:{},processInstanceId:{}", event.getProcessDefinitionId(), event.getProcessInstanceId());
             BpmnModel bpmnModel = repositoryService.getBpmnModel(event.getProcessDefinitionId());
             String flowId = ((TaskEntity) taskEntity).getTaskDefinitionKey();
             UserTask flowElement = (UserTask) bpmnModel.getMainProcess().getFlowElement(flowId);
 
             if (flowElement != null) {
-                log.info("NodeAssignedEventListener...");
-                Process process = bpmnModel.getMainProcess(); //获取主流程的，不考虑子流程
-                UserTask flowElementUpdate = (UserTask) process.getFlowElement(flowElement.getId());
-                flowElementUpdate.setAssignee(flowElement.getAssignee());
-                process.removeFlowElement(flowElement.getId());
-                process.addFlowElement(flowElement);
+                Object assignee = ((TaskEntity) taskEntity).getVariable(Constant.assignee);
+                // 没有assignee时使用当前登陆的用户
+                ((TaskEntity) taskEntity).setAssignee(assignee == null ? "current.userId" : (String) assignee);
+                ((TaskEntity) taskEntity).setOwner(flowElement.getOwner());
             }
         }
     }

@@ -3,16 +3,12 @@ package com.lind.avtiviti.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableMap;
 import com.lind.avtiviti.Constant;
 import com.lind.avtiviti.util.ActivitiHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FlowElement;
-import org.activiti.bpmn.model.FlowNode;
-import org.activiti.bpmn.model.SequenceFlow;
-import org.activiti.bpmn.model.SubProcess;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
@@ -24,7 +20,6 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
-import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -49,6 +44,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +54,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * 动作处理.
@@ -182,7 +178,9 @@ public class ActionController {
      * @param procDefId act_re_procdef.ID_
      */
     @RequestMapping(value = "/execution/start/{procDefId}", method = RequestMethod.GET)
-    public void createInstance(@PathVariable String procDefId, @RequestParam String title, HttpServletResponse response) throws IOException {
+    public void createInstance(@PathVariable String procDefId,
+                               @RequestParam String title,
+                               HttpServletResponse response) throws IOException {
         // 启动流程
         ProcessInstance pi = runtimeService.startProcessInstanceById(procDefId);
         // 设置流程实例名称
@@ -210,18 +208,18 @@ public class ActionController {
      * @param response
      * @throws IOException
      */
-    @RequestMapping(value = "/deployment/del/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/deployment/suspend/{id}", method = RequestMethod.GET)
     public void deploymentDel(@PathVariable String id, HttpServletResponse response) throws IOException {
         processEngine.getRepositoryService().suspendProcessDefinitionById(id);
         response.sendRedirect("/view/deployment/list");
     }
 
     /**
-     * 流程实例的任务的审批.
+     * 流程实例的任务的审批，需要通过下一节点配置的组选择审核人
      *
      * @param procInstId 流程实例ID ACT_RU_TASK.PROC_INST_ID_
      * @param taskId     任务ID ACT_RU_TASK.ID_
-     * @param assignee   分配人
+     * @param assignee   前端传过来的分配人,为空表示自己
      * @param comment    备注
      */
     @RequestMapping(value = "/execution/pass/{procInstId}/{taskId}", method = RequestMethod.GET)
@@ -237,14 +235,13 @@ public class ActionController {
             comment = "";
         }
         taskService.addComment(taskId, procInstId, comment);
-        if (assignee != null) {
-            taskService.setAssignee(taskId, assignee);
-        }
         Map map = new HashMap();
+        map.put(Constant.assignee, assignee);
         if (StringUtils.isNoneBlank(params)) {
             String[] keys = StringUtils.split(params, FATHER_SPLIT);
             for (String val : keys) {
                 String[] sonVal = StringUtils.split(val, SON_SPLIT);
+
                 if (sonVal[0].equals(Constant.meeting)) {
                     //会签操作,需要算出会签人员数,人员分配在AssignedEventListener事件里完成
                     ProcessInstance pi = runtimeService.createProcessInstanceQuery() // 根据流程实例id获取流程实例
@@ -253,10 +250,10 @@ public class ActionController {
                     BpmnModel bpmnModel = repositoryService.getBpmnModel(pi.getProcessDefinitionId());
                     TaskDefinition taskDefinition = activitiHelper.getNextTaskInfo(procInstId);
                     UserTask userTask = (UserTask) bpmnModel.getMainProcess().getFlowElement(taskDefinition.getKey());
-                    if (StringUtils.isBlank(userTask.getAssignee())) {
-                        throw new ActivitiException("需要为节点指定人员");
+                    if (StringUtils.isBlank(userTask.getOwner())) {
+                        throw new ActivitiException("需要为节点指定角色");
                     }
-                    List<String> assignees = Arrays.asList(StringUtils.split(userTask.getAssignee(), ","));
+                    List<String> assignees = Arrays.asList(StringUtils.split(assignee, ","));
                     map.put(Constant.meeting, assignees);
                 } else {
                     //普通操作
@@ -384,6 +381,29 @@ public class ActionController {
     }
 
     /**
+     * 获取当前节点的下一节点信息，前台需要它返回的role，来获取role下面的用户.
+     *
+     * @param procInstId
+     * @return
+     */
+    @RequestMapping(value = "/process/next-node/{procInstId}", method = RequestMethod.GET)
+    public Object getNextNode(@PathVariable String procInstId) throws Exception {
+        TaskDefinition taskDefinition = activitiHelper.getNextTaskInfo(procInstId);
+        if (null != taskDefinition) {
+            if (taskDefinition.getOwnerExpression().getExpressionText() == null) {
+                throw new ActivitiException("请为节点" + taskDefinition.getKey() + "配置角色");
+            }
+            return ImmutableMap.of(
+                        "end",false,
+                    "id", taskDefinition.getKey(),
+                    "name", taskDefinition.getNameExpression().getExpressionText(),
+                    "role", taskDefinition.getOwnerExpression().getExpressionText());
+        }
+        return ImmutableMap.of(
+                "end",true);
+    }
+
+    /**
      * 根据任务id查询已经执行的任务节点信息
      */
 
@@ -408,6 +428,36 @@ public class ActionController {
             }
         }
         return list;
+    }
+
+    /**
+     * 导出部署流程资源
+     *
+     * @param id
+     * @param response
+     */
+    @RequestMapping(value = "/process/export", method = RequestMethod.GET)
+    public void exportResource(@RequestParam String id,
+                               HttpServletResponse response) {
+        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(id).singleResult();
+        String resourceName = pd.getResourceName();
+        InputStream inputStream = repositoryService.getResourceAsStream(pd.getDeploymentId(),
+                resourceName);
+
+        try {
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(resourceName, "UTF-8"));
+            byte[] b = new byte[1024];
+            int len = -1;
+            while ((len = inputStream.read(b, 0, 1024)) != -1) {
+                response.getOutputStream().write(b, 0, len);
+            }
+            response.flushBuffer();
+        } catch (IOException e) {
+            log.error(e.toString());
+            throw new ActivitiException("导出部署流程资源失败");
+        }
     }
 
 }

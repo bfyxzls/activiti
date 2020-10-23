@@ -16,8 +16,8 @@
             <th>name</th>
             <th>processDefinitionId</th>
             <th>processInstanceId</th>
+            <th>assignee</th>
             <th>time</th>
-            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -26,12 +26,16 @@
             <td th:text="${item.name}"></td>
             <td th:text="${item.processDefinitionId}"></td>
             <td th:text="${item.processInstanceId}"></td>
+            <td th:text="${item.assignee}"></td>
             <td th:text="${item.time}"></td>
-            <td>
-                <a  class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.processInstanceId})}">流程图</a>
-            </td>
         </tr>
         </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="6" style="text-align: center"><img th:src="@{/execution/getHighlightImg/{id}(id=${id})}"></td>
+        </tr>
+        </tfoot>
     </table>
+
 </div>
 </html>

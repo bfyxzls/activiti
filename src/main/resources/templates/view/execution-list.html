@@ -10,10 +10,11 @@
                 var id = $(this).siblings("input[name=id]").val();
                 var taskId = $(this).siblings("input[name=taskId]").val();
                 var params = $(this).siblings("input[name=params]").val();
+                var assignee = $(this).siblings("input[name=assignee]").val();
                 if (params == "") {
-                    location.href = "/execution/pass/" + id + "/" + taskId;
+                    location.href = "/execution/pass/" + id + "/" + taskId + "?assignee=" + assignee;
                 } else {
-                    location.href = "/execution/pass/" + id + "/" + taskId + "?params=" + params;
+                    location.href = "/execution/pass/" + id + "/" + taskId + "?assignee=" + assignee + "&params=" + params;
                 }
 
             });
@@ -41,9 +42,10 @@
             <th>time</th>
             <th>isSuspended</th>
             <th>executionId</th>
-            <th>taskId</th>
-            <th>taskName</th>
-            <th>assignee</th>
+            <th>任务ID</th>
+            <th>任务</th>
+            <th>角色</th>
+            <th>审核人</th>
             <th></th>
         </tr>
         </thead>
@@ -56,22 +58,28 @@
             <td th:text="${item.executionId}"></td>
             <td th:text="${item.taskId}"></td>
             <td th:text="${item.taskName}"></td>
+            <td th:text="${item.owner}"></td>
             <td th:text="${item.assignee}"></td>
-
             <td>
                 <input type="hidden" name="id" th:value="${item.id}">
                 <input type="hidden" name="taskId" th:value="${item.taskId}">
-                参数：<input type="text" name="params">
-                驳回节点：<input type="text" name="destTaskKey">
+                下一审批人：<input type="text" name="assignee" style="width:50px">
+                扩展参数：<input type="text" name="params" style="width:50px">
                 <button class="btn btn-success btn-xs apply" type="button">审批</button>
+                驳回节点：<input type="text" name="destTaskKey" style="width:50px">
                 <button class="btn btn-danger btn-xs back" type="button">驳回</button>
-                <a class="btn btn-success btn-xs" th:href="@{/view/task/list/{id}(id=${item.id})}">审批历史</a>
+                <a class="btn btn-default btn-xs" target="_blank" th:href="@{/process/next-node/{id}(id=${item.id})}">下一节点</a>
+                <a class="btn btn-success btn-xs" target="_blank"
+                   th:href="@{/view/task/list/{id}(id=${item.id})}">审批历史</a>
                 <a class="btn btn-warning btn-xs" th:href="@{/task/complete/{id}(id=${item.taskId})}">完成</a>
-                <a class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.id})}">实时流程图</a>
             </td>
         </tr>
         </tbody>
     </table>
+    <ul class="pager">
+        <li><a href="?pageindex=1&pagesize=10" id="Previous">Previous</a></li>
+        <li><a href="?pageindex=2&pagesize=10" id="Next">Next</a></li>
+    </ul>
 </div>
 
 </html>
