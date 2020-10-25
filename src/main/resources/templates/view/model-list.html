@@ -31,10 +31,10 @@
             <td th:text="${item.lastUpdateTime}"></td>
             <td th:text="${item.metaInfo}"></td>
             <td>
-                <a class="btn btn-primary btn-xs" target="_blank"
+                <a class="btn btn-primary btn-sm" target="_blank"
                    th:href="@{/modeler.html?modelId={id}(id=${item.id})}">修改模型</a>
-                <a class="btn btn-danger btn-xs" th:href="@{/model/delete?modelId={id}(id=${item.id})}">删除模型</a>
-                <a class="btn btn-success btn-xs" th:href="@{/model/deploy/{id}(id=${item.id})}">部署为流程</a>
+                <a class="btn btn-danger btn-sm" th:href="@{/model/delete?modelId={id}(id=${item.id})}">删除模型</a>
+                <a class="btn btn-success btn-sm" th:href="@{/model/deploy/{id}(id=${item.id})}">部署为流程</a>
             </td>
         </tr>
         </tbody>

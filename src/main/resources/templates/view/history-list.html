@@ -28,9 +28,9 @@
             <td th:text="${item.startTime}"></td>
             <td th:text="${item.endTime}"></td>
             <td>
-                <a class="btn btn-success btn-xs" th:href="@{/view/task/list/{id}(id=${item.id})}">审批历史</a>
+                <a class="btn btn-success btn-sm" th:href="@{/view/task/list/{id}(id=${item.id})}">审批历史</a>
 
-                <a  class="btn btn-primary btn-xs" th:href="@{/execution/getHighlightImg/{id}(id=${item.processInstanceId})}">流程图</a>
+                <a  class="btn btn-primary btn-sm" th:href="@{/execution/getHighlightImg/{id}(id=${item.processInstanceId})}">流程图</a>
             </td>
         </tr>
         </tbody>
