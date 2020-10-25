@@ -554,183 +554,22 @@ CREATE TABLE `ACT_RU_VARIABLE`  (
   CONSTRAINT `ACT_RU_VARIABLE_ibfk_3` FOREIGN KEY (`PROC_INST_ID_`) REFERENCES `ACT_RU_EXECUTION` (`ID_`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
--- ----------------------------
--- Table structure for act_approve_agent
--- ----------------------------
-DROP TABLE IF EXISTS `act_approve_agent`;
-CREATE TABLE `act_approve_agent`  (
-  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `agent_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci   COMMENT '代理人ID',
-  `authorizer_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci   COMMENT '授权人ID',
-  `agent_term` int(1)   COMMENT '0：持续代理   1：代理一段时间',
-  `agent_strart_time` datetime(0)   ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '代理开始时间',
-  `agent_end_time` datetime(0)   ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '代理结束时间',
-  `status` int(1)   COMMENT '代理状态（0：开启  1：关闭）',
-  `create_time` datetime(0)   ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-  `create_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '创建人',
-  `update_time` datetime(0)   ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '最新更新时间',
-  `update_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '最新更新人',
-  `del_flag` int(1)   COMMENT '删除标记',
-  `create_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门',
-  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '租户ID',
-  `create_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门IDS',
-  `update_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门',
-  `update_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门IDS',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Compact;
-
--- ----------------------------
--- Table structure for act_approve_file
--- ----------------------------
-DROP TABLE IF EXISTS `act_approve_file`;
-CREATE TABLE `act_approve_file`  (
-  `id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `proc_inst_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '流程实例id',
-  `task_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '任务id',
-  `file_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '附件名称',
-  `file_address` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '附件下载地址',
-  `create_time` datetime(0)   ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-  `create_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '创建人',
-  `update_time` datetime(0)   ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '最新更新时间',
-  `update_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '最新更新人',
-  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '租户ID',
-  `create_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门',
-  `create_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门IDS',
-  `update_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门',
-  `update_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门IDS'
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Compact;
-
--- ----------------------------
--- Table structure for t_act_business
--- ----------------------------
-DROP TABLE IF EXISTS `t_act_business`;
-CREATE TABLE `t_act_business`  (
-  `id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `result` int(11)   COMMENT '结果状态    0未提交默认 1处理中 2通过 3驳回 4退回',
-  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '申请标题',
-  `status` int(11)   COMMENT '状态 0草稿默认 1处理中 2结束',
-  `table_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '关联业务表id',
-  `business_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '流程类型： 1.合同流程  2.制度流程 3.授权流程',
-  `proc_def_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '流程定义id',
-  `proc_inst_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '流程实例id',
-  `user_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建用户id',
-  `create_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人',
-  `create_time` datetime(0)   COMMENT '创建时间',
-  `del_flag` int(11)   COMMENT '删除标记',
-  `update_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人',
-  `update_time` datetime(0)   COMMENT '更新时间',
-  `apply_time` datetime(0)   COMMENT '提交申请时间',
-  `create_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门',
-  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '租户ID',
-  `create_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门IDS',
-  `update_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门',
-  `update_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门IDS',
-  `back_flow` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '回退之后，下次提交到哪一个节点，空表示按照流程，不空则表示按照指定节点走',
-  `retreat_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '回退人',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for t_act_category
--- ----------------------------
-DROP TABLE IF EXISTS `t_act_category`;
-CREATE TABLE `t_act_category`  (
-  `id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `create_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建者',
-  `create_time` datetime(0)   COMMENT '创建时间',
-  `del_flag` int(11)   COMMENT '删除标志 默认0',
-  `update_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新者',
-  `update_time` datetime(0)   COMMENT '更新时间',
-  `parent_flag` bit(1)   COMMENT '是否为父节点(含子节点) 默认false',
-  `parent_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '父id',
-  `sort_order` decimal(10, 2)   COMMENT '排序值',
-  `status` int(11)   COMMENT '是否启用 0启用 -1禁用',
-  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '分类名称',
-  `type` int(11)   COMMENT '类型 0分组 1分类',
-  `create_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门',
-  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '租户ID',
-  `create_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门IDS',
-  `update_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门',
-  `update_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门IDS',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for t_act_model
--- ----------------------------
-DROP TABLE IF EXISTS `t_act_model`;
-CREATE TABLE `t_act_model`  (
-  `id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `create_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建者',
-  `create_time` datetime(0)   COMMENT '创建时间',
-  `del_flag` int(11)   COMMENT '删除标志 默认0',
-  `update_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新者',
-  `update_time` datetime(0)   COMMENT '更新时间',
-  `description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '描述/备注',
-  `model_key` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '标识',
-  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '模型名称',
-  `version` int(11)   COMMENT '版本',
-  `create_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门',
-  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '租户ID',
-  `create_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门IDS',
-  `update_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门',
-  `update_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门IDS',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for t_act_node
 -- ----------------------------
-DROP TABLE IF EXISTS `t_act_node`;
-CREATE TABLE `t_act_node`  (
+DROP TABLE IF EXISTS `ACT_RE_NODE`;
+CREATE TABLE `ACT_RE_NODE`  (
   `id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `create_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建者',
-  `create_time` datetime(0)   COMMENT '创建时间',
-  `del_flag` int(11)   COMMENT '删除标志 默认0',
-  `update_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新者',
-  `update_time` datetime(0)   COMMENT '更新时间',
-  `node_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '节点id',
-  `role_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '角色id',
-  `type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '节点关联类型 0角色 1用户',
-  `user_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '用户id',
-  `relate_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci  ,
-  `create_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门',
-  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '租户ID',
-  `create_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门IDS',
-  `update_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门',
-  `update_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门IDS',
+  `create_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime(0) DEFAULT NULL COMMENT '创建时间',
+  `del_flag` int(11) DEFAULT NULL COMMENT '删除标志 默认0',
+  `update_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime(0) DEFAULT NULL COMMENT '更新时间',
+  `node_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '节点id',
+  `role_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '角色id',
+  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '租户ID',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for t_act_process
--- ----------------------------
-DROP TABLE IF EXISTS `t_act_process`;
-CREATE TABLE `t_act_process`  (
-  `id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `create_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建者',
-  `create_time` datetime(0)   COMMENT '创建时间',
-  `del_flag` int(11)   COMMENT '删除标志 默认0',
-  `update_by` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新者',
-  `update_time` datetime(0)   COMMENT '更新时间',
-  `category_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '所属分类',
-  `deployment_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '部署id',
-  `description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '描述/备注',
-  `diagram_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '流程图片名',
-  `latest` bit(1)   COMMENT '最新版本',
-  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '流程名称',
-  `process_key` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '流程标识名称',
-  `status` int(11)   COMMENT '流程状态 部署后默认1激活',
-  `version` int(11)   COMMENT '版本',
-  `xml_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT 'xml文件名',
-  `business_table` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '关联业务表名',
-  `route_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '关联前端表单路由名',
-  `create_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门',
-  `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '租户ID',
-  `create_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '创建人部门IDS',
-  `update_department_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门',
-  `update_department_ids` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci   COMMENT '更新人部门IDS',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
