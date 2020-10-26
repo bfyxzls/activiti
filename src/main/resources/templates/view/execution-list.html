@@ -12,9 +12,14 @@
                 var params = $(this).siblings("input[name=params]").val();
                 var assignee = $(this).siblings("input[name=assignee]").val();
                 if (params == "") {
-                    location.href = "/execution/pass/" + id + "/" + taskId + "?assignee=" + assignee;
+                    $.get("/execution/pass/" + id + "/" + taskId + "?assignee=" + assignee, function (data) {
+                        location.reload();
+                    })
+
                 } else {
-                    location.href = "/execution/pass/" + id + "/" + taskId + "?assignee=" + assignee + "&params=" + params;
+                    $.get("/execution/pass/" + id + "/" + taskId + "?assignee=" + assignee + "&params=" + params, function (data) {
+                        location.reload();
+                    })
                 }
 
             });

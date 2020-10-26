@@ -3,6 +3,14 @@
       xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
       layout:decorator="layout">
 <div layout:fragment="content">
+    <script>
+        function start(id,title) {
+            $.get("/execution/start/"+id+"?title="+title, function (data) {
+                location.href="/view/execution/list";
+            })
+        }
+
+            </script>
     <ol class="breadcrumb">
         <li>工作流</li>
         <li>部署流程列表</li>
@@ -34,11 +42,11 @@
 
             <td th:text="${item.time}"></td>
             <td><a class="btn btn-primary btn-sm"
-                   th:href="@{/execution/start/{id}?title={title}(id=${item.proDefId},title=${item.name})}">启动</a>
+                   th:onclick="start([[${item.proDefId}]],[[${item.name}]])">启动</a>
                 <a class="btn btn-success btn-sm"
                    th:href="@{/view/deployment/node-list/{id}(id=${item.proDefId})}">节点配置</a>
-                <a class="btn btn-danger btn-sm" th:href="@{/deployment/suspend/{id}(id=${item.proDefId})}">挂起</a>
-                <a class="btn btn-primary btn-sm" th:href="@{/process/export?id={id}(id=${item.proDefId})}">导出流程</a>
+                <a class="btn btn-danger btn-sm" th:href="@{/deployment/suspend/{id}(id=${item.proDefId})}" id="stop">挂起</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/process/export?id={id}(id=${item.proDefId})}" id="export">导出流程</a>
             </td>
         </tr>
         </tbody>

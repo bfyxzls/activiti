@@ -8,20 +8,20 @@ import com.lind.avtiviti.Constant;
 import com.lind.avtiviti.entity.ActReNode;
 import com.lind.avtiviti.repository.ActReNodeRepository;
 import com.lind.avtiviti.util.ActivitiHelper;
+import com.lind.avtiviti.vo.ProcessNodeVo;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FlowElement;
+import org.activiti.bpmn.model.Process;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.editor.language.json.converter.util.CollectionUtils;
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -34,31 +34,29 @@ import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.zip.ZipInputStream;
 
 /**
- * 动作处理.
+ * activiti操作接口,前后分离时更灵活.
  */
 @RestController
 @Slf4j
@@ -81,6 +79,10 @@ public class ActionController {
     ActivitiHelper activitiHelper;
     @Autowired
     ActReNodeRepository actReNodeRepository;
+
+    private static int longCompare(Date obj1, Date obj2) {
+        return obj1.compareTo(obj2);
+    }
 
     /**
      * 建立页面，同时也保存.
@@ -120,7 +122,6 @@ public class ActionController {
     @GetMapping("/model/delete")
     public void delModel(String modelId, HttpServletResponse response) throws IOException {
         repositoryService.deleteModel(modelId);
-        response.sendRedirect("/view/model/list");
     }
 
     /**
@@ -161,7 +162,6 @@ public class ActionController {
             throw new IllegalArgumentException(e.getMessage());
         }
 
-        response.sendRedirect("/view/deployment/list");
     }
 
     /**
@@ -189,7 +189,6 @@ public class ActionController {
         ProcessInstance pi = runtimeService.startProcessInstanceById(procDefId);
         // 设置流程实例名称
         runtimeService.setProcessInstanceName(pi.getId(), title);
-        response.sendRedirect("/view/execution/list");
     }
 
     /**
@@ -202,7 +201,6 @@ public class ActionController {
     @RequestMapping(value = "/task/complete/{id}", method = RequestMethod.GET)
     public void taskComplete(@PathVariable String id, HttpServletResponse response) throws IOException {
         taskService.complete(id);
-        response.sendRedirect("/view/execution/list");
     }
 
     /**
@@ -215,7 +213,6 @@ public class ActionController {
     @RequestMapping(value = "/deployment/suspend/{id}", method = RequestMethod.GET)
     public void deploymentDel(@PathVariable String id, HttpServletResponse response) throws IOException {
         processEngine.getRepositoryService().suspendProcessDefinitionById(id);
-        response.sendRedirect("/view/deployment/list");
     }
 
     /**
@@ -267,7 +264,6 @@ public class ActionController {
         }
 
         taskService.complete(taskId, map);
-        response.sendRedirect("/view/execution/list");
     }
 
     /**
@@ -350,8 +346,6 @@ public class ActionController {
         // 还原原活动节点流出项参数
         currActiviti.getOutgoingTransitions().addAll(hisPvmTransitionList);
 
-
-        response.sendRedirect("/view/execution/list");
     }
 
     /**
@@ -414,7 +408,6 @@ public class ActionController {
     /**
      * 根据任务id查询已经执行的任务节点信息
      */
-
     public List<Map<String, String>> getRunNodes(String taskId) {
         // 获取流程历史中已执行节点，并按照节点在流程中执行先后顺序排序
         List<HistoricActivityInstance> historicActivityInstanceList = historyService.createHistoricActivityInstanceQuery()
@@ -468,4 +461,287 @@ public class ActionController {
         }
     }
 
+    /**
+     * 模模型列表.
+     */
+    @RequestMapping(value = "/model/list", method = RequestMethod.GET)
+    public Object modelist(org.springframework.ui.Model model,
+                           @RequestParam(required = false, defaultValue = "1") int pageindex,
+                           @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
+        List<org.activiti.engine.repository.Model> list = processEngine.getRepositoryService().createModelQuery()
+                .orderByCreateTime().desc()
+                .listPage(pageindex, pagesize);
+
+        return list;
+    }
+
+    /**
+     * 通过文件部署流程.
+     *
+     * @param file
+     */
+    @PostMapping(value = "deployByFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void deployByFile(@RequestPart("file") MultipartFile file, HttpServletResponse response) throws IOException {
+        String fileName = file.getOriginalFilename();
+        if (StringUtils.isBlank(fileName)) {
+            return;
+        }
+        try {
+            InputStream fileInputStream = file.getInputStream();
+            Deployment deployment;
+            String extension = FilenameUtils.getExtension(fileName);
+            String baseName = FilenameUtils.getBaseName(fileName);
+            if ("zip".equals(extension) || "bar".equals(extension)) {
+                ZipInputStream zip = new ZipInputStream(fileInputStream);
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addZipInputStream(zip).deploy();
+            } else if ("png".equals(extension)) {
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addInputStream(fileName, fileInputStream).deploy();
+            } else if (fileName.indexOf("bpmn20.xml") != -1) {
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addInputStream(fileName, fileInputStream).deploy();
+            } else if ("bpmn".equals(extension)) {
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addInputStream(baseName + ".bpmn20.xml", fileInputStream).deploy();
+            } else {
+                throw new IllegalArgumentException("文件格式不支持");
+            }
+            ProcessDefinition processDefinition = processEngine.getRepositoryService()
+                    .createProcessDefinitionQuery()
+                    .deploymentId(deployment.getId())
+                    .singleResult();
+            convertToModel(processDefinition.getId(), response);
+
+        } catch (Exception e) {
+            log.error(e.toString());
+        }
+    }
+
+    /**
+     * 转化流程为模型.
+     *
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/convertToModel/{id}", method = RequestMethod.GET)
+    public void convertToModel(@PathVariable String id, HttpServletResponse response) throws IOException {
+
+        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(id).singleResult();
+        InputStream bpmnStream = repositoryService.getResourceAsStream(pd.getDeploymentId(), pd.getResourceName());
+
+        try {
+            XMLInputFactory xif = XMLInputFactory.newInstance();
+            InputStreamReader in = new InputStreamReader(bpmnStream, "UTF-8");
+            XMLStreamReader xtr = xif.createXMLStreamReader(in);
+            BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(xtr);
+            BpmnJsonConverter converter = new BpmnJsonConverter();
+
+            ObjectNode modelNode = converter.convertToJson(bpmnModel);
+            org.activiti.engine.repository.Model modelData = repositoryService.newModel();
+            modelData.setKey(pd.getKey());
+            modelData.setName(pd.getResourceName());
+
+            ObjectNode modelObjectNode = new ObjectMapper().createObjectNode();
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, pd.getName());
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, modelData.getVersion());
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, pd.getDescription());
+            modelData.setMetaInfo(modelObjectNode.toString());
+
+            repositoryService.saveModel(modelData);
+            repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
+        } catch (Exception e) {
+            log.error(e.toString());
+            throw new IllegalArgumentException("转化流程为模型失败");
+        }
+    }
+
+    /**
+     * 部署列表.
+     */
+    @RequestMapping(value = "/deployment/list", method = RequestMethod.GET)
+    public Object deployment(org.springframework.ui.Model model,
+                             @RequestParam(required = false) String status,
+                             @RequestParam(required = false, defaultValue = "1") int pageindex,
+                             @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
+        List<Deployment> list = processEngine.getRepositoryService().createDeploymentQuery()
+                .orderByDeploymenTime()
+                .desc()
+                .listPage(pageindex, pagesize);
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Deployment item : list) {
+            ProcessDefinition processDefinition = processEngine.getRepositoryService()
+                    .createProcessDefinitionQuery()
+                    .deploymentId(item.getId())
+                    .singleResult();
+            if (StringUtils.isBlank(status)) {
+                result.add(ImmutableMap.of(
+                        "id", item.getId(),
+                        "time", item.getDeploymentTime(),
+                        "name", item.getName(),
+                        "proDefId", processDefinition.getId(),
+                        "isSuspended", processDefinition.isSuspended()
+                ));
+            } else if (status.equals("1")) {
+                if (!processDefinition.isSuspended())
+                    result.add(ImmutableMap.of(
+                            "id", item.getId(),
+                            "time", item.getDeploymentTime(),
+                            "name", item.getName(),
+                            "proDefId", processDefinition.getId(),
+                            "isSuspended", processDefinition.isSuspended()
+                    ));
+            } else if (status.equals("2")) {
+                if (processDefinition.isSuspended())
+                    result.add(ImmutableMap.of(
+                            "id", item.getId(),
+                            "time", item.getDeploymentTime(),
+                            "name", item.getName(),
+                            "proDefId", processDefinition.getId(),
+                            "isSuspended", processDefinition.isSuspended()
+                    ));
+            }
+
+        }
+        return result;
+
+    }
+
+    /**
+     * 当前运行中的流程实例列表，应该是启动了的流程（/execution/start/会出现的流程）.
+     */
+    @RequestMapping(value = "/execution/list", method = RequestMethod.GET)
+    public Object execution(org.springframework.ui.Model model,
+                            @RequestParam(required = false, defaultValue = "1") int pageindex,
+                            @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
+        List<ProcessInstance> list =
+                runtimeService.createProcessInstanceQuery()
+                        .orderByProcessInstanceId()
+                        .desc()
+                        .listPage(pageindex, pagesize);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ProcessInstance item : list) {
+            List<Task> tasks =
+                    taskService.createTaskQuery()
+                            .active()
+                            .processInstanceId(item.getId()).list();//并行网关可能是多条任务
+            for (Task task : tasks) {
+
+                String owner = task.getOwner() == null ? "" : task.getOwner();
+                String assignee = task.getAssignee() == null ? "" : task.getAssignee();
+                result.add(new ImmutableMap.Builder<String, Object>()
+                        .put("id", item.getId())
+                        .put("proDefId", item.getProcessDefinitionId())
+                        .put("isSuspended", item.isSuspended())
+                        .put("executionId", task.getExecutionId())
+                        .put("taskId", task.getId())
+                        .put("taskName", task.getName())
+                        .put("time", task.getCreateTime())
+                        .put("owner", owner)
+                        .put("assignee", assignee)
+                        .build());
+            }
+        }
+        result = result.stream()
+                .sorted((i, j) -> longCompare((Date) j.get("time"), (Date) i.get("time")))
+                .collect(Collectors.toList());
+
+        return result;
+    }
+
+    /**
+     * 历史流程列表.
+     */
+    @RequestMapping(value = "/history/list", method = RequestMethod.GET)
+    public Object historyList(org.springframework.ui.Model model,
+                              @RequestParam(required = false, defaultValue = "1") int pageindex,
+                              @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
+        List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery()
+                //     .finished()
+                .orderByProcessInstanceStartTime()
+                .desc()
+                .listPage(pageindex, pagesize);
+
+        return list;
+    }
+
+    /**
+     * 已完成的历史记录列表.
+     */
+    @RequestMapping(value = "/task/list/{id}", method = RequestMethod.GET)
+    public Object taskList(@PathVariable String id, org.springframework.ui.Model model) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
+                .processInstanceId(id)
+                .finished()
+                .orderByTaskCreateTime()
+                .desc()
+                .list();
+        return list;
+    }
+
+    /**
+     * 通过流程定义id获取流程节点.
+     *
+     * @param procDefId 流程定义ID
+     */
+    @RequestMapping(value = "/deployment/node-list/{procDefId}", method = RequestMethod.GET)
+    public Object getProcessNode(@PathVariable String procDefId, org.springframework.ui.Model model) {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
+        List<Process> processes = bpmnModel.getProcesses();
+        List<ProcessNodeVo> processNodeVos = new ArrayList<>();
+        for (Process process : processes) {
+            Collection<FlowElement> elements = process.getFlowElements();
+            for (FlowElement element : elements) {
+                if (element instanceof UserTask) {
+                    ProcessNodeVo node = new ProcessNodeVo();
+                    node.setNodeId(element.getId());
+                    node.setTitle(element.getName());
+                    ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(element.getId(), procDefId);
+                    if (actReNode != null) {
+                        node.setAssignee(actReNode.getRoleId()); //指定的角色
+                    }
+                    processNodeVos.add(node);
+                }
+            }
+        }
+        log.info("processNodeVos:{}", processNodeVos);
+        return processNodeVos;
+    }
+
+    /**
+     * 节点配置.
+     *
+     * @param procDefId
+     * @param nodeId
+     * @param assignee
+     * @param response
+     * @throws IOException
+     */
+    @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
+    @Transactional
+    public void getProcessNode(@RequestParam String procDefId,
+                               String[] nodeId,
+                               String[] assignee,
+                               HttpServletResponse response) throws IOException {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
+        Process process = bpmnModel.getMainProcess(); //获取主流程的，不考虑子流程
+        List<ActReNode> actReNodes = new ArrayList<>();
+        for (int i = 0; i < nodeId.length; i++) {
+            UserTask flowElement = (UserTask) process.getFlowElement(nodeId[i]);
+            flowElement.setOwner(assignee[i]);
+            process.setValues(flowElement);//数据只保存在内存里，需要添加节点分配数据表才能实现
+            actReNodeRepository.removeByNodeIdAndProcessDefId(nodeId[i], procDefId);
+            ActReNode actReNode = new ActReNode();
+            actReNode.setId(UUID.randomUUID().toString());
+            actReNode.setNodeId(nodeId[i]);
+            actReNode.setRoleId(assignee[i]);
+            actReNode.setProcessDefId(procDefId);
+            actReNodeRepository.save(actReNode);
+        }
+    }
 }

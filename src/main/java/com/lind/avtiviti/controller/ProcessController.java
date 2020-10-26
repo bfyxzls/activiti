@@ -361,18 +361,5 @@ public class ProcessController {
         return list;
     }
 
-    /**
-     * 通过流程定义id获取流程节点.
-     *
-     * @param procDefId 流程定义ID
-     */
-    @RequestMapping(value = "/deployment/node-list/{procDefId}", method = RequestMethod.GET)
-    public List<Process> getProcessNode(@PathVariable String procDefId, Model model) {
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
-        List<Process> processes = bpmnModel.getProcesses();
-        model.addAttribute("result", processes);
-        // return "view/node-list";
-        return processes;
-    }
 
 }
