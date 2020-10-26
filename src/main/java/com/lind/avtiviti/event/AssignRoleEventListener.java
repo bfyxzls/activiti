@@ -24,7 +24,7 @@ import javax.transaction.Transactional;
 @Slf4j
 @Component
 @Transactional
-public class AssignRoleEventListener implements org.activiti.engine.delegate.event.ActivitiEventListener {
+    public class AssignRoleEventListener implements org.activiti.engine.delegate.event.ActivitiEventListener {
     @Autowired
     RepositoryService repositoryService;
     @Autowired
