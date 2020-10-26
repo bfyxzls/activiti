@@ -18,9 +18,11 @@ import org.activiti.engine.impl.pvm.delegate.ActivityBehavior;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.runtime.Execution;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -179,7 +181,7 @@ public class ActivitiHelper {
      * @param processInstanceId 流程实例Id信息
      */
     private TaskDefinition nextTaskDefinition(ActivityImpl activityImpl, String activityId,
-                                      String elString, String processInstanceId) {
+                                              String elString, String processInstanceId) {
 
         PvmActivity ac = null;
 
@@ -263,5 +265,38 @@ public class ActivitiHelper {
         context.setVariable(key, factory.createValueExpression(value, String.class));
         ValueExpression e = factory.createValueExpression(context, el, boolean.class);
         return (Boolean) e.getValue(context);
+    }
+
+    /**
+     * 是否为最后一个节点.
+     *
+     * @param procInstId
+     * @return
+     */
+    public Boolean isEndNode(@PathVariable String procInstId) {
+        // 当前执行节点id
+        ProcessInstance pi = runtimeService.createProcessInstanceQuery().processInstanceId(procInstId)
+                .singleResult();
+        String currActId = pi.getActivityId();
+        ProcessDefinitionEntity dfe = (ProcessDefinitionEntity)
+                ((RepositoryServiceImpl) repositoryService)
+                        .getDeployedProcessDefinition(pi.getProcessDefinitionId());
+        // 获取所有节点
+        List<ActivityImpl> activitiList = dfe.getActivities();
+        // 判断出当前流程所处节点，根据路径获得下一个节点实例
+        for (ActivityImpl activityImpl : activitiList) {
+            if (activityImpl.getId().equals(currActId)) {
+                // 获取下一个节点
+                List<PvmTransition> pvmTransitions = activityImpl.getOutgoingTransitions();
+
+                PvmActivity pvmActivity = pvmTransitions.get(0).getDestination();
+                String type = pvmActivity.getProperty("type").toString();
+                if ("endEvent".equals(type)) {
+                    // 结束
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

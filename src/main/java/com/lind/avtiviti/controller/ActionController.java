@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.lind.avtiviti.Constant;
+import com.lind.avtiviti.entity.ActReNode;
+import com.lind.avtiviti.repository.ActReNodeRepository;
 import com.lind.avtiviti.util.ActivitiHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
@@ -77,6 +79,8 @@ public class ActionController {
     TaskService taskService;
     @Autowired
     ActivitiHelper activitiHelper;
+    @Autowired
+    ActReNodeRepository actReNodeRepository;
 
     /**
      * 建立页面，同时也保存.
@@ -389,18 +393,22 @@ public class ActionController {
     @RequestMapping(value = "/process/next-node/{procInstId}", method = RequestMethod.GET)
     public Object getNextNode(@PathVariable String procInstId) throws Exception {
         TaskDefinition taskDefinition = activitiHelper.getNextTaskInfo(procInstId);
+        String definitionId = runtimeService.createProcessInstanceQuery()
+                .processInstanceId(procInstId).singleResult().getProcessDefinitionId();
+
         if (null != taskDefinition) {
-            if (taskDefinition.getOwnerExpression().getExpressionText() == null) {
+            ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(taskDefinition.getKey(), definitionId);
+            if (actReNode == null) {
                 throw new ActivitiException("请为节点" + taskDefinition.getKey() + "配置角色");
             }
             return ImmutableMap.of(
-                        "end",false,
+                    "end", false,
                     "id", taskDefinition.getKey(),
                     "name", taskDefinition.getNameExpression().getExpressionText(),
-                    "role", taskDefinition.getOwnerExpression().getExpressionText());
+                    "role", actReNode.getRoleId());
         }
         return ImmutableMap.of(
-                "end",true);
+                "end", true);
     }
 
     /**

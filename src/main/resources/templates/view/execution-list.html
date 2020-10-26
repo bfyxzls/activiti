@@ -61,6 +61,8 @@
             <td th:text="${item.owner}"></td>
             <td th:text="${item.assignee}"></td>
             <td>
+                <a class="btn btn-default btn-sm" target="_blank" th:href="@{/process/next-node/{id}(id=${item.id})}"
+                   th:alt="根据下一节点的角色选择它的人员">下一节点</a>
                 <input type="hidden" name="id" th:value="${item.id}">
                 <input type="hidden" name="taskId" th:value="${item.taskId}">
                 审批人：<input type="text" name="assignee" style="width:50px">
@@ -68,7 +70,7 @@
                 <button class="btn btn-success btn-sm apply" type="button">审批</button>
                 驳回：<input type="text" name="destTaskKey" style="width:50px">
                 <button class="btn btn-danger btn-sm back" type="button">驳回</button>
-                <a class="btn btn-default btn-sm" target="_blank" th:href="@{/process/next-node/{id}(id=${item.id})}">下一节点</a>
+
                 <a class="btn btn-success btn-sm" target="_blank"
                    th:href="@{/view/task/list/{id}(id=${item.id})}">审批历史</a>
                 <a class="btn btn-warning btn-sm" th:href="@{/task/complete/{id}(id=${item.taskId})}">完成</a>

@@ -2,7 +2,6 @@ package com.lind.avtiviti.entity;
 
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
@@ -10,17 +9,9 @@ import java.util.Date;
 /**
  * 节点配置表.
  */
-@Table(name = "ACT_RE_NODE")
+@Table(name = "act_re_node")
 @Entity
 public class ActReNode {
-    public String getProcessDefId() {
-        return processDefId;
-    }
-
-    public void setProcessDefId(String processDefId) {
-        this.processDefId = processDefId;
-    }
-
     @Id
     private String id;
     private Date createTime;
@@ -32,6 +23,14 @@ public class ActReNode {
     private String roleId;
     private String tenantId;
     private Integer delFlag;
+
+    public String getProcessDefId() {
+        return processDefId;
+    }
+
+    public void setProcessDefId(String processDefId) {
+        this.processDefId = processDefId;
+    }
 
     public String getId() {
         return id;

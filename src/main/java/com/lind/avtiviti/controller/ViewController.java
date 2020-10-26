@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
@@ -329,7 +330,7 @@ public class ViewController {
                     ProcessNodeVo node = new ProcessNodeVo();
                     node.setNodeId(element.getId());
                     node.setTitle(element.getName());
-                    ActReNode actReNode = actReNodeRepository.findByNodeIdAAndProcessDefId(element.getId(),procDefId);
+                    ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(element.getId(),procDefId);
                     if (actReNode != null) {
                         node.setAssignee(actReNode.getRoleId()); //指定的角色
                     }
@@ -354,6 +355,7 @@ public class ViewController {
      * @throws IOException
      */
     @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
+    @Transactional
     public void getProcessNode(@RequestParam String procDefId,
                                String[] nodeId,
                                String[] assignee,
@@ -365,7 +367,7 @@ public class ViewController {
             UserTask flowElement = (UserTask) process.getFlowElement(nodeId[i]);
             flowElement.setOwner(assignee[i]);
             process.setValues(flowElement);//数据只保存在内存里，需要添加节点分配数据表才能实现
-            actReNodeRepository.deleteActReNodeByNodeIdAndProcessDefId(nodeId[i],procDefId);
+            actReNodeRepository.removeByNodeIdAndProcessDefId(nodeId[i],procDefId);
             ActReNode actReNode = new ActReNode();
             actReNode.setId(UUID.randomUUID().toString());
             actReNode.setNodeId(nodeId[i]);

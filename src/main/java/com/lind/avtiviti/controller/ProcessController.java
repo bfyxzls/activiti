@@ -166,7 +166,7 @@ public class ProcessController {
                     return pvmActivity.getId()  ;
                 } else if ("endEvent".equals(type)) {
                     // 结束
-                    return null;
+                    return "end";
                 } else if ("exclusiveGateway".equals(type)) {
                     //网关
                     try {

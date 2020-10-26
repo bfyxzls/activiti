@@ -36,4 +36,9 @@ public interface Constant {
      */
     String assignee = "assignee";
 
+    /**
+     * 结束节点.
+     */
+    String endNode = "end";
+
 }

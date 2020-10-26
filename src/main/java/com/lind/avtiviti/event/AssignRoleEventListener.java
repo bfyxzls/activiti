@@ -1,9 +1,10 @@
 package com.lind.avtiviti.event;
 
 import com.lind.avtiviti.Constant;
+import com.lind.avtiviti.entity.ActReNode;
+import com.lind.avtiviti.repository.ActReNodeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.delegate.event.ActivitiEntityEvent;
 import org.activiti.engine.delegate.event.ActivitiEvent;
@@ -26,6 +27,8 @@ import javax.transaction.Transactional;
 public class AssignRoleEventListener implements org.activiti.engine.delegate.event.ActivitiEventListener {
     @Autowired
     RepositoryService repositoryService;
+    @Autowired
+    ActReNodeRepository actReNodeRepository;
 
     @Override
     public void onEvent(ActivitiEvent event) {
@@ -44,13 +47,12 @@ public class AssignRoleEventListener implements org.activiti.engine.delegate.eve
             log.info("统一为UserTask的owner赋值,processDefinitionId:{},processInstanceId:{}", event.getProcessDefinitionId(), event.getProcessInstanceId());
             BpmnModel bpmnModel = repositoryService.getBpmnModel(event.getProcessDefinitionId());
             String flowId = ((TaskEntity) taskEntity).getTaskDefinitionKey();
-            UserTask flowElement = (UserTask) bpmnModel.getMainProcess().getFlowElement(flowId);
-
-            if (flowElement != null) {
+            ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(flowId, event.getProcessDefinitionId());
+            if (actReNode != null) {
                 Object assignee = ((TaskEntity) taskEntity).getVariable(Constant.assignee);
                 // 没有assignee时使用当前登陆的用户
                 ((TaskEntity) taskEntity).setAssignee(assignee == null ? "current.userId" : (String) assignee);
-                ((TaskEntity) taskEntity).setOwner(flowElement.getOwner());
+                ((TaskEntity) taskEntity).setOwner(actReNode.getRoleId());
             }
         }
     }
