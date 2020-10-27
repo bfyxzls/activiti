@@ -10,6 +10,17 @@
             })
         }
 
+        function stop(id) {
+            $.get("/deployment/suspend/"+id, function (data) {
+                location.href="/view/deployment/list";
+            })
+        }
+        function active(id) {
+            $.get("/deployment/active/"+id, function (data) {
+                location.href="/view/deployment/list";
+            })
+        }
+
             </script>
     <ol class="breadcrumb">
         <li>工作流</li>
@@ -45,7 +56,10 @@
                    th:onclick="start([[${item.proDefId}]],[[${item.name}]])">启动</a>
                 <a class="btn btn-success btn-sm"
                    th:href="@{/view/deployment/node-list/{id}(id=${item.proDefId})}">节点配置</a>
-                <a class="btn btn-danger btn-sm" th:href="@{/deployment/suspend/{id}(id=${item.proDefId})}" id="stop">挂起</a>
+
+                <a class="btn btn-danger btn-sm" th:if="${!item.isSuspended }" th:onclick="stop([[${item.proDefId}]])">挂起</a>
+                <a class="btn btn-default btn-sm" th:if="${item.isSuspended }" th:onclick="active([[${item.proDefId}]])">激活</a>
+
                 <a class="btn btn-primary btn-sm" th:href="@{/process/export?id={id}(id=${item.proDefId})}" id="export">导出流程</a>
             </td>
         </tr>

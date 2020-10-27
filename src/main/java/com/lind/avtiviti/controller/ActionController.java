@@ -169,11 +169,25 @@ public class ActionController {
      *
      * @param procDefId ACT_RE_PROCDEF.ID_
      */
-    @RequestMapping(value = "/execution/active/{procDefId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/deployment/active/{procDefId}", method = RequestMethod.GET)
     public String active(@PathVariable String procDefId) {
         repositoryService.activateProcessDefinitionById(procDefId, true, new Date());
         return "激活成功";
     }
+
+
+    /**
+     * 假删除部署
+     *
+     * @param id
+     * @param response
+     * @throws IOException
+     */
+    @RequestMapping(value = "/deployment/suspend/{id}", method = RequestMethod.GET)
+    public void deploymentDel(@PathVariable String id, HttpServletResponse response) throws IOException {
+        processEngine.getRepositoryService().suspendProcessDefinitionById(id);
+    }
+
 
     /**
      * 启动流程实例 数据在ACT_RU_TASK和ACT_RU_JOB和ACT_RU_EXECUTION表生成记录.
@@ -201,18 +215,6 @@ public class ActionController {
     @RequestMapping(value = "/task/complete/{id}", method = RequestMethod.GET)
     public void taskComplete(@PathVariable String id, HttpServletResponse response) throws IOException {
         taskService.complete(id);
-    }
-
-    /**
-     * 假删除部署
-     *
-     * @param id
-     * @param response
-     * @throws IOException
-     */
-    @RequestMapping(value = "/deployment/suspend/{id}", method = RequestMethod.GET)
-    public void deploymentDel(@PathVariable String id, HttpServletResponse response) throws IOException {
-        processEngine.getRepositoryService().suspendProcessDefinitionById(id);
     }
 
     /**
@@ -744,4 +746,5 @@ public class ActionController {
             actReNodeRepository.save(actReNode);
         }
     }
+
 }

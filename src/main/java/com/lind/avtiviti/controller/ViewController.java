@@ -98,50 +98,7 @@ public class ViewController {
         return "/view/model-upload";
     }
 
-    /**
-     * 通过文件部署流程.
-     *
-     * @param file
-     */
-    @PostMapping(value = "deployByFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void deployByFile(@RequestPart("file") MultipartFile file, HttpServletResponse response) throws IOException {
-        String fileName = file.getOriginalFilename();
-        if (StringUtils.isBlank(fileName)) {
-            return;
-        }
-        try {
-            InputStream fileInputStream = file.getInputStream();
-            Deployment deployment;
-            String extension = FilenameUtils.getExtension(fileName);
-            String baseName = FilenameUtils.getBaseName(fileName);
-            if ("zip".equals(extension) || "bar".equals(extension)) {
-                ZipInputStream zip = new ZipInputStream(fileInputStream);
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addZipInputStream(zip).deploy();
-            } else if ("png".equals(extension)) {
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addInputStream(fileName, fileInputStream).deploy();
-            } else if (fileName.indexOf("bpmn20.xml") != -1) {
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addInputStream(fileName, fileInputStream).deploy();
-            } else if ("bpmn".equals(extension)) {
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addInputStream(baseName + ".bpmn20.xml", fileInputStream).deploy();
-            } else {
-                throw new IllegalArgumentException("文件格式不支持");
-            }
-            ProcessDefinition processDefinition = processEngine.getRepositoryService()
-                    .createProcessDefinitionQuery()
-                    .deploymentId(deployment.getId())
-                    .singleResult();
-            convertToModel(processDefinition.getId(), response);
 
-        } catch (Exception e) {
-            log.error(e.toString());
-        }
-
-        response.sendRedirect("/view/model/list");
-    }
 
     /**
      * 转化流程为模型.
@@ -345,36 +302,5 @@ public class ViewController {
         return "view/node-list";
     }
 
-    /**
-     * 节点配置.
-     *
-     * @param procDefId
-     * @param nodeId
-     * @param assignee
-     * @param response
-     * @throws IOException
-     */
-    @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
-    @Transactional
-    public void getProcessNode(@RequestParam String procDefId,
-                               String[] nodeId,
-                               String[] assignee,
-                               HttpServletResponse response) throws IOException {
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
-        Process process = bpmnModel.getMainProcess(); //获取主流程的，不考虑子流程
-        List<ActReNode> actReNodes = new ArrayList<>();
-        for (int i = 0; i < nodeId.length; i++) {
-            UserTask flowElement = (UserTask) process.getFlowElement(nodeId[i]);
-            flowElement.setOwner(assignee[i]);
-            process.setValues(flowElement);//数据只保存在内存里，需要添加节点分配数据表才能实现
-            actReNodeRepository.removeByNodeIdAndProcessDefId(nodeId[i],procDefId);
-            ActReNode actReNode = new ActReNode();
-            actReNode.setId(UUID.randomUUID().toString());
-            actReNode.setNodeId(nodeId[i]);
-            actReNode.setRoleId(assignee[i]);
-            actReNode.setProcessDefId(procDefId);
-            actReNodeRepository.save(actReNode);
-        }
-        response.sendRedirect("/view/deployment/list");
-    }
+
 }
