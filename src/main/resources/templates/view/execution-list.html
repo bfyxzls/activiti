@@ -84,9 +84,16 @@
         </tbody>
     </table>
     <ul class="pager">
-        <li><a href="?pageindex=1&pagesize=10" id="Previous">Previous</a></li>
-        <li><a href="?pageindex=2&pagesize=10" id="Next">Next</a></li>
+
     </ul>
+    <script>
+        var index = 1;
+        if (location.href.split('pageindex')[1] != undefined) {
+            index = parseInt(location.href.split('pageindex')[1].split('=')[1]);
+        }
+        $('.pager').append('<li><a id="Previous" href="?pageindex=' + (index - 1) + '">上一页</a></li>');
+        $('.pager').append('<li><a id="Next" href="?pageindex=' + (index + 1) + '">下一页</a></li>');
+    </script>
 </div>
 
 </html>
