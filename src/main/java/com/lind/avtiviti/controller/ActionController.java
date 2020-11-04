@@ -18,12 +18,7 @@ import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.editor.language.json.converter.util.CollectionUtils;
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -41,16 +36,10 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,15 +51,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
@@ -541,6 +522,18 @@ public class ActionController {
     }
 
     /**
+     * 导入再重定向.
+     * @param file
+     * @param response
+     * @throws IOException
+     */
+    @PostMapping(value = "deploy-file-redirect", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void deployByFileRedirect(@RequestPart("file") MultipartFile file, HttpServletResponse response) throws IOException {
+        deployByFile(file, response);
+        response.sendRedirect("/view/model/list");
+    }
+
+    /**
      * 转化流程为模型.
      *
      * @param id
@@ -756,6 +749,11 @@ public class ActionController {
             flowElement.setOwner(assignee[i]);
             process.setValues(flowElement);//数据只保存在内存里，需要添加节点分配数据表才能实现
             ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(nodeId[i], procDefId);
+            if(actReNode==null){
+                actReNode=new ActReNode();
+                actReNode.setId(UUID.randomUUID().toString());
+                actReNode.setCreateTime(new Date());
+            }
             actReNode.setNodeId(nodeId[i]);
             actReNode.setRoleId(assignee[i]);
             actReNode.setRejectFlag(Integer.parseInt(reject[i]));
