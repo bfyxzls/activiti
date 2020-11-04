@@ -29,7 +29,9 @@
                 var id = $(this).siblings("input[name=id]").val();
                 var taskId = $(this).siblings("input[name=taskId]").val();
                 var destTaskKey = $(this).siblings("input[name=destTaskKey]").val();
-                location.href = "/execution/back/" + id + "/" + taskId + "?destTaskKey=" + destTaskKey;
+                $.get("/execution/back/" + id + "/" + taskId + "?destTaskKey=" + destTaskKey, function (data) {
+                    location.reload();
+                })
             });
 
         });
