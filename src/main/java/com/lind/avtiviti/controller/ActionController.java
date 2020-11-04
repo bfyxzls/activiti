@@ -18,7 +18,12 @@ import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.editor.language.json.converter.util.CollectionUtils;
-import org.activiti.engine.*;
+import org.activiti.engine.ActivitiException;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -38,12 +43,18 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
@@ -51,7 +62,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
@@ -724,27 +743,34 @@ public class ActionController {
      * @param response
      * @throws IOException
      */
-    @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
-    @Transactional
-    public void getProcessNode(@RequestParam String procDefId,
-                               String[] nodeId,
-                               String[] assignee,
-                               HttpServletResponse response) throws IOException {
+    @RequestMapping(value = "/action/deployment/node-save", method = RequestMethod.POST)
+    public void saveProcessNode(@RequestParam String procDefId,
+                                String[] nodeId,
+                                String[] assignee,
+                                String[] reject,
+                                HttpServletResponse response) throws IOException {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(procDefId);
         Process process = bpmnModel.getMainProcess(); //获取主流程的，不考虑子流程
-        List<ActReNode> actReNodes = new ArrayList<>();
         for (int i = 0; i < nodeId.length; i++) {
             UserTask flowElement = (UserTask) process.getFlowElement(nodeId[i]);
             flowElement.setOwner(assignee[i]);
             process.setValues(flowElement);//数据只保存在内存里，需要添加节点分配数据表才能实现
-            actReNodeRepository.removeByNodeIdAndProcessDefId(nodeId[i], procDefId);
-            ActReNode actReNode = new ActReNode();
-            actReNode.setId(UUID.randomUUID().toString());
+            ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(nodeId[i], procDefId);
             actReNode.setNodeId(nodeId[i]);
             actReNode.setRoleId(assignee[i]);
+            actReNode.setRejectFlag(Integer.parseInt(reject[i]));
             actReNode.setProcessDefId(procDefId);
             actReNodeRepository.save(actReNode);
         }
     }
 
+    @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
+    public void getProcessNodeRedirect(@RequestParam String procDefId,
+                                       String[] nodeId,
+                                       String[] assignee,
+                                       String[] reject,
+                                       HttpServletResponse response) throws IOException {
+        saveProcessNode(procDefId, nodeId, assignee, reject, response);
+        response.sendRedirect("/view/deployment/list");
+    }
 }

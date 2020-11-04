@@ -9,13 +9,30 @@
         <li>节点配置</li>
     </ol>
     <!--遍历数组-->
-    <form id="form1" class="form-horizontal" method="post" th:action="@{/view/deployment/node-save?procDefId={procDefId}(procDefId=${procDefId})}">
+    <form id="form1" class="form-horizontal" method="post"
+          th:action="@{/deployment/node-save?procDefId={procDefId}(procDefId=${procDefId})}">
         <table class="table">
             <tr th:each="item:${result}">
-                <td th:text="${item.title}"></td>
+                <td th:text="${item.title}">
+
+                </td>
+                <td><input name="nodeId" type="hidden" th:value="${item.nodeId}"></td>
                 <td>
-                    <input name="nodeId" type="hidden" th:value="${item.nodeId}">
-                   选择角色：<input name="assignee" th:value="${item.assignee}"></td>
+                    显示驳回：<select name="reject" class="selectpicker" autocomplete="off">
+                    <span th:if="${item.rejectFlag==1}">
+                         <option value="1" selected="selected">是</option>
+                        <option value="0">否</option>
+                    </span>
+                    <span th:unless="${item.rejectFlag==1}">
+                         <option value="1">是</option>
+                        <option value="0" selected="selected">否</option>
+                    </span>
+
+                </select>
+
+                </td>
+                <td>
+                    选择角色：<input name="assignee" th:value="${item.assignee}"></td>
             </tr>
             <tr>
                 <td colspan="2">

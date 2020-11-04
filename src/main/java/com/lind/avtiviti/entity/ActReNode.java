@@ -23,6 +23,18 @@ public class ActReNode {
     private String roleId;
     private String tenantId;
     private Integer delFlag;
+    /**
+     * 是否有驳回按钮.
+     */
+    private Integer rejectFlag;
+
+    public Integer getRejectFlag() {
+        return rejectFlag;
+    }
+
+    public void setRejectFlag(Integer rejectFlag) {
+        this.rejectFlag = rejectFlag;
+    }
 
     public String getProcessDefId() {
         return processDefId;

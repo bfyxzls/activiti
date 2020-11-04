@@ -22,4 +22,8 @@ public class ProcessNodeVo {
      * 节点分配人.
      */
     private String assignee;
+    /**
+     * 是否显示驳回.
+     */
+    private Integer rejectFlag;
 }

@@ -53,6 +53,7 @@
             <th>任务</th>
             <th>角色</th>
             <th>审核人</th>
+            <th>驳回</th>
             <th></th>
         </tr>
         </thead>
@@ -67,6 +68,7 @@
             <td th:text="${item.taskName}"></td>
             <td th:text="${item.owner}"></td>
             <td th:text="${item.assignee}"></td>
+            <td th:text="${item.rejectFlag}"></td>
             <td>
                 <a class="btn btn-default btn-sm" target="_blank" th:href="@{/process/next-node/{id}(id=${item.id})}"
                    th:alt="根据下一节点的角色选择它的人员">下一节点</a>
@@ -75,8 +77,10 @@
                 审批人：<input type="text" name="assignee" style="width:50px">
                 参数：<input type="text" name="params" style="width:50px">
                 <button class="btn btn-success btn-sm apply" type="button">审批</button>
+                <span th:if="${item.rejectFlag==1}">
                 驳回：<input type="text" name="destTaskKey" style="width:50px">
                 <button class="btn btn-danger btn-sm back" type="button">驳回</button>
+                    </span>
                 <a class="btn btn-success btn-sm" target="_blank"
                    th:href="@{/view/task/list/{id}(id=${item.id})}">审批历史</a>
             </td>

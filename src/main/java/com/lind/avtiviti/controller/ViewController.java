@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.lind.avtiviti.config.ActivitiConfig;
 import com.lind.avtiviti.entity.ActReNode;
 import com.lind.avtiviti.repository.ActReNodeRepository;
+import com.lind.avtiviti.util.ActivitiHelper;
 import com.lind.avtiviti.vo.ProcessNodeVo;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
@@ -15,33 +16,42 @@ import org.activiti.bpmn.model.Process;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
-import org.activiti.engine.*;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngineConfiguration;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.ZipInputStream;
 
 @Controller
 @RequestMapping("view")
@@ -71,6 +81,8 @@ public class ViewController {
     HttpMessageConverters httpMessageConverters;
     @Autowired
     ActReNodeRepository actReNodeRepository;
+    @Autowired
+    ActivitiHelper activitiHelper;
 
     private static int longCompare(Date obj1, Date obj2) {
         return obj1.compareTo(obj2);
@@ -97,8 +109,6 @@ public class ViewController {
     public String deployByFile() {
         return "/view/model-upload";
     }
-
-
 
     /**
      * 转化流程为模型.
@@ -198,8 +208,10 @@ public class ViewController {
     @RequestMapping(value = "/execution/list", method = RequestMethod.GET)
     public String execution(Model model,
                             @RequestParam(required = false, defaultValue = "1") int pageindex,
-                            @RequestParam(required = false, defaultValue = "10") int pagesize) {
+                            @RequestParam(required = false, defaultValue = "10") int pagesize) throws Exception {
         pageindex = (pageindex - 1) * pagesize;
+
+
         List<ProcessInstance> list =
                 runtimeService.createProcessInstanceQuery()
                         .orderByProcessInstanceId()
@@ -211,10 +223,22 @@ public class ViewController {
                     taskService.createTaskQuery()
                             .active()
                             .processInstanceId(item.getId()).list();//并行网关可能是多条任务
+            ExecutionEntity execution = (ExecutionEntity) runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(item.getProcessInstanceId()).singleResult();
+
+
             for (Task task : tasks) {
 
                 String owner = task.getOwner() == null ? "" : task.getOwner();
                 String assignee = task.getAssignee() == null ? "" : task.getAssignee();
+
+                ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(execution.getActivityId(),item.getProcessDefinitionId());
+                Integer rejectFlag;
+                if (actReNode == null) {
+                    rejectFlag = 0;
+                } else {
+                    rejectFlag = actReNode.getRejectFlag();
+                }
                 result.add(new ImmutableMap.Builder<String, Object>()
                         .put("id", item.getId())
                         .put("proDefId", item.getProcessDefinitionId())
@@ -225,6 +249,7 @@ public class ViewController {
                         .put("time", task.getCreateTime())
                         .put("owner", owner)
                         .put("assignee", assignee)
+                        .put("rejectFlag", rejectFlag)
                         .build());
             }
         }
@@ -287,9 +312,10 @@ public class ViewController {
                     ProcessNodeVo node = new ProcessNodeVo();
                     node.setNodeId(element.getId());
                     node.setTitle(element.getName());
-                    ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(element.getId(),procDefId);
+                    ActReNode actReNode = actReNodeRepository.findByNodeIdAndProcessDefId(element.getId(), procDefId);
                     if (actReNode != null) {
                         node.setAssignee(actReNode.getRoleId()); //指定的角色
+                        node.setRejectFlag(actReNode.getRejectFlag());
                     }
                     processNodeVos.add(node);
                 }

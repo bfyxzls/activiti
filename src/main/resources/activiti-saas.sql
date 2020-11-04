@@ -570,7 +570,7 @@ CREATE TABLE `ACT_RE_NODE`  (
   `role_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '角色id',
   `tenant_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '租户ID',
    `process_def_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '节点定义id',
-
+   `reject_flag` int(11) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '是否有驳回,1有，0没有',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
