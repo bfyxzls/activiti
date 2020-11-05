@@ -1,0 +1,232 @@
+2020-11-05 08:44:30.025 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 14016 (started by PC170 in D:\github\activiti)
+2020-11-05 08:44:30.026 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:44:30.944 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:44:31.132 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 175ms. Found 1 repository interfaces.
+2020-11-05 08:44:31.831 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:44:32.118 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:44:32.185 org.hibernate.Version [Test worker] : HHH000412: Hibernate Core {5.4.6.Final}
+2020-11-05 08:44:32.362 org.hibernate.annotations.common.Version [Test worker] : HCANN000001: Hibernate Commons Annotations {5.1.0.Final}
+2020-11-05 08:44:32.446 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-1 - Starting...
+2020-11-05 08:44:36.587 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:44:36.589 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:44:36.596 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:44:36.641 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 14016 (started by PC170 in D:\github\activiti)
+2020-11-05 08:44:36.642 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:44:36.808 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:44:36.818 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 9ms. Found 1 repository interfaces.
+2020-11-05 08:44:36.880 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:44:36.944 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:44:36.947 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-2 - Starting...
+2020-11-05 08:44:40.962 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:44:40.963 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:44:40.971 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:44:41.009 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 14016 (started by PC170 in D:\github\activiti)
+2020-11-05 08:44:41.010 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:44:41.158 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:44:41.168 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 8ms. Found 1 repository interfaces.
+2020-11-05 08:44:41.230 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:44:41.294 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:44:41.297 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-3 - Starting...
+2020-11-05 08:44:45.327 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:44:45.327 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:44:45.330 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:44:45.400 org.activiti.engine.ProcessEngines [Test worker] : Initializing process engine using configuration 'file:/D:/github/activiti/build/resources/test/activiti.cfg.xml'
+2020-11-05 08:44:45.400 org.activiti.engine.ProcessEngines [Test worker] : initializing process engine for resource file:/D:/github/activiti/build/resources/test/activiti.cfg.xml
+2020-11-05 08:44:46.317 org.activiti.engine.impl.ProcessEngineImpl [Test worker] : ProcessEngine default created
+2020-11-05 08:44:46.321 org.activiti.engine.ProcessEngines [Test worker] : initialised process engine default
+2020-11-05 08:44:46.545 org.activiti.engine.impl.ProcessEngineImpl [Test worker] : ProcessEngine default created
+2020-11-05 08:44:46.591 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.bpmn
+2020-11-05 08:44:46.643 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.png
+2020-11-05 08:44:46.692 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.bpmn
+2020-11-05 08:44:46.827 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.png
+2020-11-05 08:44:47.022 org.activiti.engine.impl.ProcessEngineImpl [Test worker] : ProcessEngine default created
+2020-11-05 08:44:47.035 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.lind.avtiviti.AvtivitiApplicationTests], using SpringBootContextLoader
+2020-11-05 08:44:47.036 org.springframework.test.context.support.AbstractContextLoader [Test worker] : Could not detect default resource locations for test class [com.lind.avtiviti.AvtivitiApplicationTests]: no resource found for suffixes {-context.xml, Context.groovy}.
+2020-11-05 08:44:47.036 org.springframework.test.context.support.AnnotationConfigContextLoaderUtils [Test worker] : Could not detect default configuration classes for test class [com.lind.avtiviti.AvtivitiApplicationTests]: AvtivitiApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2020-11-05 08:44:47.038 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Found @SpringBootConfiguration com.lind.avtiviti.AvtivitiApplication for test class com.lind.avtiviti.AvtivitiApplicationTests
+2020-11-05 08:44:47.039 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+2020-11-05 08:44:47.039 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@72b20295, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@37dc767d, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@1671e7cf, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@b13401d, org.springframework.test.context.support.DirtiesContextTestExecutionListener@69575d40, org.springframework.test.context.transaction.TransactionalTestExecutionListener@3deca189, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@243a6664, org.springframework.test.context.event.EventPublishingTestExecutionListener@3538d956, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@66563fec, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@3e6e2a46, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@499062a9, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@3a91e0a4, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@6d6f1145]
+2020-11-05 08:44:47.065 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 14016 (started by PC170 in D:\github\activiti)
+2020-11-05 08:44:47.066 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:44:47.203 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:44:47.212 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 8ms. Found 1 repository interfaces.
+2020-11-05 08:44:47.264 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:44:47.324 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:44:47.327 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-4 - Starting...
+2020-11-05 08:44:51.357 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:44:51.357 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:44:51.359 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:44:51.392 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 14016 (started by PC170 in D:\github\activiti)
+2020-11-05 08:44:51.393 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:44:51.572 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:44:51.583 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 10ms. Found 1 repository interfaces.
+2020-11-05 08:44:51.646 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:44:51.936 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:44:51.942 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-5 - Starting...
+2020-11-05 08:44:55.982 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:44:55.983 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:44:55.985 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:44:56.014 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 14016 (started by PC170 in D:\github\activiti)
+2020-11-05 08:44:56.014 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:44:56.137 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:44:56.145 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 7ms. Found 1 repository interfaces.
+2020-11-05 08:44:56.199 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:44:56.259 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:44:56.263 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-6 - Starting...
+2020-11-05 08:45:00.281 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:00.281 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:00.283 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:00.312 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 14016 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:00.313 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:00.600 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:00.611 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 11ms. Found 1 repository interfaces.
+2020-11-05 08:45:00.663 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:00.723 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:00.729 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-7 - Starting...
+2020-11-05 08:45:04.752 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:04.753 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:04.757 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:13.468 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 8968 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:13.469 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:14.231 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:14.318 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 78ms. Found 1 repository interfaces.
+2020-11-05 08:45:14.635 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:14.810 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:14.873 org.hibernate.Version [Test worker] : HHH000412: Hibernate Core {5.4.6.Final}
+2020-11-05 08:45:15.016 org.hibernate.annotations.common.Version [Test worker] : HCANN000001: Hibernate Commons Annotations {5.1.0.Final}
+2020-11-05 08:45:15.104 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-1 - Starting...
+2020-11-05 08:45:19.220 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:19.223 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:19.230 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:19.293 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 8968 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:19.293 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:19.454 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:19.465 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 9ms. Found 1 repository interfaces.
+2020-11-05 08:45:19.529 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:19.623 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:19.627 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-2 - Starting...
+2020-11-05 08:45:23.638 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:23.638 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:23.640 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:23.673 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 8968 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:23.674 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:24.056 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:24.068 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 11ms. Found 1 repository interfaces.
+2020-11-05 08:45:24.144 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:24.217 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:24.221 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-3 - Starting...
+2020-11-05 08:45:28.260 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:28.261 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:28.263 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:28.319 org.activiti.engine.ProcessEngines [Test worker] : Initializing process engine using configuration 'file:/D:/github/activiti/build/resources/test/activiti.cfg.xml'
+2020-11-05 08:45:28.319 org.activiti.engine.ProcessEngines [Test worker] : initializing process engine for resource file:/D:/github/activiti/build/resources/test/activiti.cfg.xml
+2020-11-05 08:45:29.084 org.activiti.engine.impl.ProcessEngineImpl [Test worker] : ProcessEngine default created
+2020-11-05 08:45:29.088 org.activiti.engine.ProcessEngines [Test worker] : initialised process engine default
+2020-11-05 08:45:29.294 org.activiti.engine.impl.ProcessEngineImpl [Test worker] : ProcessEngine default created
+2020-11-05 08:45:29.340 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.bpmn
+2020-11-05 08:45:29.396 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.png
+2020-11-05 08:45:29.453 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.bpmn
+2020-11-05 08:45:29.587 org.activiti.engine.impl.bpmn.deployer.BpmnDeployer [Test worker] : Processing resource diagrams/leave.png
+2020-11-05 08:45:29.792 org.activiti.engine.impl.ProcessEngineImpl [Test worker] : ProcessEngine default created
+2020-11-05 08:45:29.817 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.lind.avtiviti.AvtivitiApplicationTests], using SpringBootContextLoader
+2020-11-05 08:45:29.818 org.springframework.test.context.support.AbstractContextLoader [Test worker] : Could not detect default resource locations for test class [com.lind.avtiviti.AvtivitiApplicationTests]: no resource found for suffixes {-context.xml, Context.groovy}.
+2020-11-05 08:45:29.818 org.springframework.test.context.support.AnnotationConfigContextLoaderUtils [Test worker] : Could not detect default configuration classes for test class [com.lind.avtiviti.AvtivitiApplicationTests]: AvtivitiApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2020-11-05 08:45:29.819 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Found @SpringBootConfiguration com.lind.avtiviti.AvtivitiApplication for test class com.lind.avtiviti.AvtivitiApplicationTests
+2020-11-05 08:45:29.821 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+2020-11-05 08:45:29.821 org.springframework.boot.test.context.SpringBootTestContextBootstrapper [Test worker] : Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@66931bb4, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@4beae44f, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@1b091dcc, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@6cfd13dd, org.springframework.test.context.support.DirtiesContextTestExecutionListener@124deb4d, org.springframework.test.context.transaction.TransactionalTestExecutionListener@e19add7, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@5dad36a5, org.springframework.test.context.event.EventPublishingTestExecutionListener@594aa536, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@24a02ad1, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@67144c87, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@533856de, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@5fd73a9a, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@7a046513]
+2020-11-05 08:45:29.853 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 8968 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:29.853 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:30.173 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:30.222 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 48ms. Found 1 repository interfaces.
+2020-11-05 08:45:30.292 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:30.435 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:30.445 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-4 - Starting...
+2020-11-05 08:45:34.462 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:34.463 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:34.465 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:34.493 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 8968 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:34.493 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:34.612 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:34.620 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 8ms. Found 1 repository interfaces.
+2020-11-05 08:45:34.671 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:34.728 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:34.731 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-5 - Starting...
+2020-11-05 08:45:38.761 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:38.761 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:38.763 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:38.795 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 8968 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:38.795 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:38.916 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:38.924 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 8ms. Found 1 repository interfaces.
+2020-11-05 08:45:38.973 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:39.030 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:39.033 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-6 - Starting...
+2020-11-05 08:45:43.061 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:43.061 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:43.063 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2020-11-05 08:45:43.091 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : Starting AvtivitiApplicationTests on BDYH-PC170 with PID 8968 (started by PC170 in D:\github\activiti)
+2020-11-05 08:45:43.091 com.lind.avtiviti.AvtivitiApplicationTests [Test worker] : No active profile set, falling back to default profiles: default
+2020-11-05 08:45:43.209 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Bootstrapping Spring Data repositories in DEFAULT mode.
+2020-11-05 08:45:43.217 org.springframework.data.repository.config.RepositoryConfigurationDelegate [Test worker] : Finished Spring Data repository scanning in 7ms. Found 1 repository interfaces.
+2020-11-05 08:45:43.264 org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [Test worker] : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2020-11-05 08:45:43.320 org.hibernate.jpa.internal.util.LogHelper [Test worker] : HHH000204: Processing PersistenceUnitInfo [name: default]
+2020-11-05 08:45:43.323 com.zaxxer.hikari.HikariDataSource [Test worker] : HikariPool-7 - Starting...
+2020-11-05 08:45:47.352 org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator [Test worker] : HHH000342: Could not obtain connection to query metadata : Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+2020-11-05 08:45:47.352 org.springframework.web.context.support.GenericWebApplicationContext [Test worker] : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is org.hibernate.service.spi.ServiceException: Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+2020-11-05 08:45:47.353 org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener [Test worker] : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.

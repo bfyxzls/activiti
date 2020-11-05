@@ -736,7 +736,7 @@ public class ActionController {
      * @param response
      * @throws IOException
      */
-    @RequestMapping(value = "/action/deployment/node-save", method = RequestMethod.POST)
+    @RequestMapping(value = "deployment/node-save", method = RequestMethod.POST)
     public void saveProcessNode(@RequestParam String procDefId,
                                 String[] nodeId,
                                 String[] assignee,
@@ -762,7 +762,7 @@ public class ActionController {
         }
     }
 
-    @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
+    @RequestMapping(value = "/deployment/node-save-redirect", method = RequestMethod.POST)
     public void getProcessNodeRedirect(@RequestParam String procDefId,
                                        String[] nodeId,
                                        String[] assignee,

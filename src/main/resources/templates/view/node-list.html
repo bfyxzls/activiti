@@ -10,7 +10,7 @@
     </ol>
     <!--遍历数组-->
     <form id="form1" class="form-horizontal" method="post"
-          th:action="@{/deployment/node-save?procDefId={procDefId}(procDefId=${procDefId})}">
+          th:action="@{/deployment/node-save-redirect?procDefId={procDefId}(procDefId=${procDefId})}">
         <table class="table">
             <tr th:each="item:${result}">
                 <td th:text="${item.title}">
