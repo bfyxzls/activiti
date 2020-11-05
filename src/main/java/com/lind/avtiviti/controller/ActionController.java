@@ -165,6 +165,81 @@ public class ActionController {
     }
 
     /**
+     * 模模型列表.
+     */
+    @RequestMapping(value = "/model/list", method = RequestMethod.GET)
+    public Object modelist(org.springframework.ui.Model model,
+                           @RequestParam(required = false, defaultValue = "1") int pageindex,
+                           @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
+        List<org.activiti.engine.repository.Model> list = processEngine.getRepositoryService().createModelQuery()
+                .orderByCreateTime().desc()
+                .listPage(pageindex, pagesize);
+
+        return list;
+    }
+
+    /**
+     * 通过文件生成模型.
+     *
+     * @param file
+     */
+    @PostMapping(value = "deployByFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void deployByFile(@RequestPart("file") MultipartFile file, HttpServletResponse response) throws IOException {
+        String fileName = file.getOriginalFilename();
+        if (StringUtils.isBlank(fileName)) {
+            return;
+        }
+        try {
+            InputStream fileInputStream = file.getInputStream();
+            Deployment deployment;
+            String extension = FilenameUtils.getExtension(fileName);
+            String baseName = FilenameUtils.getBaseName(fileName);
+            if ("zip".equals(extension) || "bar".equals(extension)) {
+                ZipInputStream zip = new ZipInputStream(fileInputStream);
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addZipInputStream(zip).deploy();
+            } else if ("png".equals(extension)) {
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addInputStream(fileName, fileInputStream).deploy();
+            } else if (fileName.indexOf("bpmn20.xml") != -1) {
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addInputStream(fileName, fileInputStream).deploy();
+            } else if ("bpmn".equals(extension)) {
+                deployment = repositoryService.createDeployment().name(baseName)
+                        .addInputStream(baseName + ".bpmn20.xml", fileInputStream).deploy();
+            } else {
+                throw new IllegalArgumentException("文件格式不支持");
+            }
+            ProcessDefinition processDefinition = processEngine.getRepositoryService()
+                    .createProcessDefinitionQuery()
+                    .deploymentId(deployment.getId())
+                    .singleResult();
+            convertToModel(processDefinition.getId(), response);
+
+        } catch (Exception e) {
+            log.error(e.toString());
+        }
+    }
+
+    /**
+     * 导入再重定向.
+     * @param file
+     * @param response
+     * @throws IOException
+     */
+    @PostMapping(value = "deploy-file-redirect", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void deployByFileRedirect(@RequestPart("file") MultipartFile file, HttpServletResponse response) throws IOException {
+        deployByFile(file, response);
+        response.sendRedirect("/view/model/list");
+    }
+
+
+
+
+
+
+    /**
      * 激活流程定义，通过/deployment/list来查看流程列表里的ACT_RE_PROCDEF.
      *
      * @param procDefId ACT_RE_PROCDEF.ID_
@@ -175,9 +250,8 @@ public class ActionController {
         return "激活成功";
     }
 
-
     /**
-     * 假删除部署
+     * 挂起
      *
      * @param id
      * @param response
@@ -187,6 +261,130 @@ public class ActionController {
     public void deploymentDel(@PathVariable String id, HttpServletResponse response) throws IOException {
         processEngine.getRepositoryService().suspendProcessDefinitionById(id);
     }
+    /**
+     * 导出部署流程资源
+     *
+     * @param id
+     * @param response
+     */
+    @RequestMapping(value = "/deployment/export", method = RequestMethod.GET)
+    public void exportResource(@RequestParam String id,
+                               HttpServletResponse response) {
+        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(id).singleResult();
+        String resourceName = pd.getResourceName();
+        InputStream inputStream = repositoryService.getResourceAsStream(pd.getDeploymentId(),
+                resourceName);
+
+        try {
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(resourceName, "UTF-8"));
+            byte[] b = new byte[1024];
+            int len = -1;
+            while ((len = inputStream.read(b, 0, 1024)) != -1) {
+                response.getOutputStream().write(b, 0, len);
+            }
+            response.flushBuffer();
+        } catch (IOException e) {
+            log.error(e.toString());
+            throw new ActivitiException("导出部署流程资源失败");
+        }
+    }
+
+
+    /**
+     * 转化流程为模型.
+     *
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/deployment/convertToModel/{id}", method = RequestMethod.GET)
+    public void convertToModel(@PathVariable String id, HttpServletResponse response) throws IOException {
+
+        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(id).singleResult();
+        InputStream bpmnStream = repositoryService.getResourceAsStream(pd.getDeploymentId(), pd.getResourceName());
+
+        try {
+            XMLInputFactory xif = XMLInputFactory.newInstance();
+            InputStreamReader in = new InputStreamReader(bpmnStream, "UTF-8");
+            XMLStreamReader xtr = xif.createXMLStreamReader(in);
+            BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(xtr);
+            BpmnJsonConverter converter = new BpmnJsonConverter();
+
+            ObjectNode modelNode = converter.convertToJson(bpmnModel);
+            org.activiti.engine.repository.Model modelData = repositoryService.newModel();
+            modelData.setKey(pd.getKey());
+            modelData.setName(pd.getResourceName());
+
+            ObjectNode modelObjectNode = new ObjectMapper().createObjectNode();
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, pd.getName());
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, modelData.getVersion());
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, pd.getDescription());
+            modelData.setMetaInfo(modelObjectNode.toString());
+
+            repositoryService.saveModel(modelData);
+            repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
+        } catch (Exception e) {
+            log.error(e.toString());
+            throw new IllegalArgumentException("转化流程为模型失败");
+        }
+    }
+
+    /**
+     * 部署列表.
+     */
+    @RequestMapping(value = "/deployment/list", method = RequestMethod.GET)
+    public Object deployment(org.springframework.ui.Model model,
+                             @RequestParam(required = false) String status,
+                             @RequestParam(required = false, defaultValue = "1") int pageindex,
+                             @RequestParam(required = false, defaultValue = "10") int pagesize) {
+        pageindex = (pageindex - 1) * pagesize;
+        List<Deployment> list = processEngine.getRepositoryService().createDeploymentQuery()
+                .orderByDeploymenTime()
+                .desc()
+                .listPage(pageindex, pagesize);
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Deployment item : list) {
+            ProcessDefinition processDefinition = processEngine.getRepositoryService()
+                    .createProcessDefinitionQuery()
+                    .deploymentId(item.getId())
+                    .singleResult();
+            if (StringUtils.isBlank(status)) {
+                result.add(ImmutableMap.of(
+                        "id", item.getId(),
+                        "time", item.getDeploymentTime(),
+                        "name", item.getName(),
+                        "proDefId", processDefinition.getId(),
+                        "isSuspended", processDefinition.isSuspended()
+                ));
+            } else if (status.equals("1")) {
+                if (!processDefinition.isSuspended())
+                    result.add(ImmutableMap.of(
+                            "id", item.getId(),
+                            "time", item.getDeploymentTime(),
+                            "name", item.getName(),
+                            "proDefId", processDefinition.getId(),
+                            "isSuspended", processDefinition.isSuspended()
+                    ));
+            } else if (status.equals("2")) {
+                if (processDefinition.isSuspended())
+                    result.add(ImmutableMap.of(
+                            "id", item.getId(),
+                            "time", item.getDeploymentTime(),
+                            "name", item.getName(),
+                            "proDefId", processDefinition.getId(),
+                            "isSuspended", processDefinition.isSuspended()
+                    ));
+            }
+
+        }
+        return result;
+
+    }
+
+
+
 
 
     /**
@@ -433,196 +631,6 @@ public class ActionController {
         return list;
     }
 
-    /**
-     * 导出部署流程资源
-     *
-     * @param id
-     * @param response
-     */
-    @RequestMapping(value = "/process/export", method = RequestMethod.GET)
-    public void exportResource(@RequestParam String id,
-                               HttpServletResponse response) {
-        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery()
-                .processDefinitionId(id).singleResult();
-        String resourceName = pd.getResourceName();
-        InputStream inputStream = repositoryService.getResourceAsStream(pd.getDeploymentId(),
-                resourceName);
-
-        try {
-            response.setContentType("application/octet-stream;charset=UTF-8");
-            response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(resourceName, "UTF-8"));
-            byte[] b = new byte[1024];
-            int len = -1;
-            while ((len = inputStream.read(b, 0, 1024)) != -1) {
-                response.getOutputStream().write(b, 0, len);
-            }
-            response.flushBuffer();
-        } catch (IOException e) {
-            log.error(e.toString());
-            throw new ActivitiException("导出部署流程资源失败");
-        }
-    }
-
-    /**
-     * 模模型列表.
-     */
-    @RequestMapping(value = "/model/list", method = RequestMethod.GET)
-    public Object modelist(org.springframework.ui.Model model,
-                           @RequestParam(required = false, defaultValue = "1") int pageindex,
-                           @RequestParam(required = false, defaultValue = "10") int pagesize) {
-        pageindex = (pageindex - 1) * pagesize;
-        List<org.activiti.engine.repository.Model> list = processEngine.getRepositoryService().createModelQuery()
-                .orderByCreateTime().desc()
-                .listPage(pageindex, pagesize);
-
-        return list;
-    }
-
-    /**
-     * 通过文件部署流程.
-     *
-     * @param file
-     */
-    @PostMapping(value = "deployByFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void deployByFile(@RequestPart("file") MultipartFile file, HttpServletResponse response) throws IOException {
-        String fileName = file.getOriginalFilename();
-        if (StringUtils.isBlank(fileName)) {
-            return;
-        }
-        try {
-            InputStream fileInputStream = file.getInputStream();
-            Deployment deployment;
-            String extension = FilenameUtils.getExtension(fileName);
-            String baseName = FilenameUtils.getBaseName(fileName);
-            if ("zip".equals(extension) || "bar".equals(extension)) {
-                ZipInputStream zip = new ZipInputStream(fileInputStream);
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addZipInputStream(zip).deploy();
-            } else if ("png".equals(extension)) {
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addInputStream(fileName, fileInputStream).deploy();
-            } else if (fileName.indexOf("bpmn20.xml") != -1) {
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addInputStream(fileName, fileInputStream).deploy();
-            } else if ("bpmn".equals(extension)) {
-                deployment = repositoryService.createDeployment().name(baseName)
-                        .addInputStream(baseName + ".bpmn20.xml", fileInputStream).deploy();
-            } else {
-                throw new IllegalArgumentException("文件格式不支持");
-            }
-            ProcessDefinition processDefinition = processEngine.getRepositoryService()
-                    .createProcessDefinitionQuery()
-                    .deploymentId(deployment.getId())
-                    .singleResult();
-            convertToModel(processDefinition.getId(), response);
-
-        } catch (Exception e) {
-            log.error(e.toString());
-        }
-    }
-
-    /**
-     * 导入再重定向.
-     * @param file
-     * @param response
-     * @throws IOException
-     */
-    @PostMapping(value = "deploy-file-redirect", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void deployByFileRedirect(@RequestPart("file") MultipartFile file, HttpServletResponse response) throws IOException {
-        deployByFile(file, response);
-        response.sendRedirect("/view/model/list");
-    }
-
-    /**
-     * 转化流程为模型.
-     *
-     * @param id
-     * @return
-     */
-    @RequestMapping(value = "/convertToModel/{id}", method = RequestMethod.GET)
-    public void convertToModel(@PathVariable String id, HttpServletResponse response) throws IOException {
-
-        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(id).singleResult();
-        InputStream bpmnStream = repositoryService.getResourceAsStream(pd.getDeploymentId(), pd.getResourceName());
-
-        try {
-            XMLInputFactory xif = XMLInputFactory.newInstance();
-            InputStreamReader in = new InputStreamReader(bpmnStream, "UTF-8");
-            XMLStreamReader xtr = xif.createXMLStreamReader(in);
-            BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(xtr);
-            BpmnJsonConverter converter = new BpmnJsonConverter();
-
-            ObjectNode modelNode = converter.convertToJson(bpmnModel);
-            org.activiti.engine.repository.Model modelData = repositoryService.newModel();
-            modelData.setKey(pd.getKey());
-            modelData.setName(pd.getResourceName());
-
-            ObjectNode modelObjectNode = new ObjectMapper().createObjectNode();
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, pd.getName());
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, modelData.getVersion());
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, pd.getDescription());
-            modelData.setMetaInfo(modelObjectNode.toString());
-
-            repositoryService.saveModel(modelData);
-            repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw new IllegalArgumentException("转化流程为模型失败");
-        }
-    }
-
-    /**
-     * 部署列表.
-     */
-    @RequestMapping(value = "/deployment/list", method = RequestMethod.GET)
-    public Object deployment(org.springframework.ui.Model model,
-                             @RequestParam(required = false) String status,
-                             @RequestParam(required = false, defaultValue = "1") int pageindex,
-                             @RequestParam(required = false, defaultValue = "10") int pagesize) {
-        pageindex = (pageindex - 1) * pagesize;
-        List<Deployment> list = processEngine.getRepositoryService().createDeploymentQuery()
-                .orderByDeploymenTime()
-                .desc()
-                .listPage(pageindex, pagesize);
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (Deployment item : list) {
-            ProcessDefinition processDefinition = processEngine.getRepositoryService()
-                    .createProcessDefinitionQuery()
-                    .deploymentId(item.getId())
-                    .singleResult();
-            if (StringUtils.isBlank(status)) {
-                result.add(ImmutableMap.of(
-                        "id", item.getId(),
-                        "time", item.getDeploymentTime(),
-                        "name", item.getName(),
-                        "proDefId", processDefinition.getId(),
-                        "isSuspended", processDefinition.isSuspended()
-                ));
-            } else if (status.equals("1")) {
-                if (!processDefinition.isSuspended())
-                    result.add(ImmutableMap.of(
-                            "id", item.getId(),
-                            "time", item.getDeploymentTime(),
-                            "name", item.getName(),
-                            "proDefId", processDefinition.getId(),
-                            "isSuspended", processDefinition.isSuspended()
-                    ));
-            } else if (status.equals("2")) {
-                if (processDefinition.isSuspended())
-                    result.add(ImmutableMap.of(
-                            "id", item.getId(),
-                            "time", item.getDeploymentTime(),
-                            "name", item.getName(),
-                            "proDefId", processDefinition.getId(),
-                            "isSuspended", processDefinition.isSuspended()
-                    ));
-            }
-
-        }
-        return result;
-
-    }
 
     /**
      * 当前运行中的流程实例列表，应该是启动了的流程（/execution/start/会出现的流程）.
@@ -668,6 +676,20 @@ public class ActionController {
     }
 
     /**
+     * 已完成的历史记录列表.
+     */
+    @RequestMapping(value = "/task/list/{id}", method = RequestMethod.GET)
+    public Object taskList(@PathVariable String id, org.springframework.ui.Model model) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
+                .processInstanceId(id)
+                .finished()
+                .orderByTaskCreateTime()
+                .desc()
+                .list();
+        return list;
+    }
+
+    /**
      * 历史流程列表.
      */
     @RequestMapping(value = "/history/list", method = RequestMethod.GET)
@@ -684,19 +706,7 @@ public class ActionController {
         return list;
     }
 
-    /**
-     * 已完成的历史记录列表.
-     */
-    @RequestMapping(value = "/task/list/{id}", method = RequestMethod.GET)
-    public Object taskList(@PathVariable String id, org.springframework.ui.Model model) {
-        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
-                .processInstanceId(id)
-                .finished()
-                .orderByTaskCreateTime()
-                .desc()
-                .list();
-        return list;
-    }
+
 
     /**
      * 通过流程定义id获取流程节点.
@@ -736,7 +746,7 @@ public class ActionController {
      * @param response
      * @throws IOException
      */
-    @RequestMapping(value = "deployment/node-save", method = RequestMethod.POST)
+    @RequestMapping(value = "/deployment/node-save", method = RequestMethod.POST)
     public void saveProcessNode(@RequestParam String procDefId,
                                 String[] nodeId,
                                 String[] assignee,

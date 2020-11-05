@@ -62,7 +62,7 @@
                 <a class="btn btn-default btn-sm" th:if="${item.isSuspended }"
                    th:onclick="active([[${item.proDefId}]])">激活</a>
 
-                <a class="btn btn-primary btn-sm" th:href="@{/process/export?id={id}(id=${item.proDefId})}" id="export">导出流程</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/deployment/export?id={id}(id=${item.proDefId})}" id="export">导出流程</a>
             </td>
         </tr>
         </tbody>
