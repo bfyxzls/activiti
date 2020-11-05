@@ -26,8 +26,8 @@
 
 
             $(".back").click(function () {
-                var id = $(this).siblings("input[name=id]").val();
-                var taskId = $(this).siblings("input[name=taskId]").val();
+                var id = $(this).closest("span").siblings("input[name=id]").val();
+                var taskId = $(this).closest("span").siblings("input[name=taskId]").val();
                 var destTaskKey = $(this).siblings("input[name=destTaskKey]").val();
                 $.get("/execution/back/" + id + "/" + taskId + "?destTaskKey=" + destTaskKey, function (data) {
                     location.reload();
